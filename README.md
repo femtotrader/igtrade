@@ -49,7 +49,7 @@ $ python2 main.py
 Enter your user, password and API Key. If you don't have an API Key yet, 
 you can get one from http://labs.ig.com/sample-apps/api-companion/
 
-![alt tag](https://raw.githubusercontent.com/maroxe/igtrade/master/login.png)
+![alt tag](https://raw.githubusercontent.com/splanquart/igtrade/master/login.png)
 
 Enjoy
 
