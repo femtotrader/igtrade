@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
-### Version 1.16 falex du 2015 06 01
-### Sur base 1.15.1 falex/guilux/beni du 2015 06 01
+# Version 1.16 falex du 2015 06 01
+# Sur base 1.15.1 falex/guilux/beni du 2015 06 01
 
 # Ajouts fonctionnels / modifications / corrections :
 # - Ajout d'un polling toutes les 60 de la valeur des Stops (Normal et Garantie) à l'ouverture
@@ -85,19 +85,19 @@ def calculatePivots():
                      headers=urls.fullheaders, proxies=personal.proxies)
     s = json.loads(r.content).get('prices')[0]
 
-    H = (s.get('highPrice').get('ask') + s.get('highPrice').get('bid')) / 2
-    B = (s.get('lowPrice').get('ask') + s.get('lowPrice').get('bid')) / 2
-    C = (s.get('closePrice').get('ask') + s.get('closePrice').get('bid')) / 2
+    h = (s.get('highPrice').get('ask') + s.get('highPrice').get('bid')) / 2
+    b = (s.get('lowPrice').get('ask') + s.get('lowPrice').get('bid')) / 2
+    c = (s.get('closePrice').get('ask') + s.get('closePrice').get('bid')) / 2
 
-    Pivot = (H + B + C) / 3
-    S1 = (2 * Pivot) - H
-    S2 = Pivot - (H - B)
-    S3 = B - 2 * (H - Pivot)
-    R1 = (2 * Pivot) - B
-    R2 = Pivot + (H - B)
-    R3 = H + 2 * (Pivot - B)
+    pivot = (h + b + c) / 3
+    s1 = (2 * pivot) - h
+    s2 = pivot - (h - b)
+    s3 = b - 2 * (h - pivot)
+    r1 = (2 * pivot) - b
+    r2 = pivot + (h - b)
+    r3 = h + 2 * (pivot - b)
 
-    return S3, S2, S1, Pivot, R1, R2, R3
+    return s3, s2, s1, pivot, r1, r2, r3
 
 
 def pollingMarketsDetails(period=60):
@@ -137,8 +137,8 @@ def getMarketsDetails():
     # print("getMarketDetails r.content %s" % r.content)
     j = json.loads(r.content)
 
-    i = j.get(u'instrument') #Sous-partie instrument
-    valueOfOnePip = float(i.get(u'valueOfOnePip'))
+    i = j.get(u'instrument')  # Sous-partie instrument
+    value_of_one_pip = float(i.get(u'valueOfOnePip'))
     ic = i.get(u'currencies')  
     # #Ajout 2015 03 09 pour recuperer la monnnais d'échange du sous-jacent
     # currencies_code = ic[0].get(u'name')
@@ -147,34 +147,37 @@ def getMarketsDetails():
     # 'code' la monnnais d'échange du sous-jacent
     currencies_code = ic[0].get(u'code')
 
-    dR = j.get(u'dealingRules') # Sous-partie dealingRules
+    dealing_rules = j.get(u'dealingRules')  # Sous-partie dealingRules
     # print(dR)
-    minDealSize = 0
-    dm = dR.get(u'minDealSize')
+    min_deal_size = 0
+    dm = dealing_rules.get(u'minDealSize')
     if dm.get(u'unit') == u'POINTS':
-         minDealSize = dm.get(u'value')
+        min_deal_size = dm.get(u'value')
     
-    minNormalStoporLimitDistance = None
-    nsd = dR.get(u'minNormalStopOrLimitDistance')
+    min_normal_stop_or_limit_distance = None
+    nsd = dealing_rules.get(u'minNormalStopOrLimitDistance')
     # print(nsd)
     if nsd.get(u'unit') == u'POINTS':
-         minNormalStoporLimitDistance = nsd.get(u'value')
-         # print("minNormalStoporLimitDistance %s" % minNormalStoporLimitDistance)
+        min_normal_stop_or_limit_distance = nsd.get(u'value')
+        # print("minNormalStoporLimitDistance %s" %
+        #       min_normal_stop_or_limit_distance)
          
-    minControlledRiskStopDistance = None
-    csd = dR.get(u'minControlledRiskStopDistance')
+    min_controlled_risk_stop_distance = None
+    csd = dealing_rules.get(u'minControlledRiskStopDistance')
     # print(csd)
     if nsd.get(u'unit') == u'POINTS':
-         minControlledRiskStopDistance = csd.get(u'value')
-         # print("minControlledRiskStopDistance %s" % minControlledRiskStopDistance)
+        min_controlled_risk_stop_distance = csd.get(u'value')
+        # print("minControlledRiskStopDistance %s" %
+        #       min_controlled_risk_stop_distance)
          
-    s = j.get(u'snapshot') #Sous-partie snapshot
-    scalingFactor = float(s.get(u'scalingFactor'))
-    # print("--- Fonction getMarketsDetails ---  ", minDealSize,
-    #       currencies_code, valueOfOnePip, scalingFactor)
+    s = j.get(u'snapshot')  # Sous-partie snapshot
+    scaling_factor = float(s.get(u'scalingFactor'))
+    # print("--- Fonction getMarketsDetails ---  ", min_deal_size,
+    #       currencies_code, value_of_one_pip, scaling_factor)
     # renvoi une valeur en point et la monnaie d'execution, la valeur d'un pip
-    return minDealSize, currencies_code, valueOfOnePip, scalingFactor, \
-           minNormalStoporLimitDistance, minControlledRiskStopDistance
+    return (min_deal_size, currencies_code, value_of_one_pip, scaling_factor,
+            min_normal_stop_or_limit_distance,
+            min_controlled_risk_stop_distance)
 
 
 def getDailyPrices():
@@ -233,42 +236,44 @@ def CloseAllButton(event):
 
 def CloseAll():
     # print ("--- Fonction CloseAll ---")
-    for dealId_todelete, v in globalvar.dict_openposition.items():
+    for deal_id_to_delete, v in globalvar.dict_openposition.items():
         direction = v.get('direction')
         size = v.get('size')
         # Appel du events-> delete
-        events.delete(dealId_todelete, direction, size)
+        events.delete(deal_id_to_delete, direction, size)
     # print(" Fin ")
 
 
 def CloseAllepicButton(event):
     # print ("--- Fonction Close All epic ---")
-    for dealId_todelete, v in globalvar.dict_openposition.items():
+    for deal_id_to_delete, v in globalvar.dict_openposition.items():
         if v.get('epic') == personal.epic:
             direction = v.get('direction')
             size = v.get('size')
             # Appel du events-> delete
-            events.delete(dealId_todelete, direction, size)
+            events.delete(deal_id_to_delete, direction, size)
     # print("--- Fin Close All epic ---")
 
 
 def SLto0(event):
     # print("SL to 0 ", personal.epic)
-    for dealId in globalvar.dict_openposition:
-        if globalvar.dict_openposition.get(dealId).get('epic') == personal.epic:
-            o = float(globalvar.dict_openposition.get(dealId).get('open_level'))
-            tp = globalvar.dict_openposition.get(dealId).get('limit_level')
-            events.updateLimit(dealId, o, tp)
+    for deal_id in globalvar.dict_openposition:
+        deal = globalvar.dict_openposition.get(deal_id)
+        if deal.get('epic') == personal.epic:
+            o = float(deal.get('open_level'))
+            tp = deal.get('limit_level')
+            events.updateLimit(deal_id, o, tp)
 
 
 def SLto0spread(event):
     # print("SL to 0 - spread ", personal.epic)
-    for dealId in globalvar.dict_openposition:
-        if globalvar.dict_openposition.get(dealId).get('epic') == personal.epic:
-            o = float(globalvar.dict_openposition.get(dealId).get('open_level'))
+    for deal_id in globalvar.dict_openposition:
+        deal = globalvar.dict_openposition.get(deal_id)
+        if deal.get('epic') == personal.epic:
+            o = float(deal.get('open_level'))
             o = o - (globalvar.spread/globalvar.scalingFactor)
-            tp = globalvar.dict_openposition.get(dealId).get('limit_level')
-            events.updateLimit(dealId, o, tp)
+            tp = deal.get('limit_level')
+            events.updateLimit(deal_id, o, tp)
 
 
 def TPto0(event):
