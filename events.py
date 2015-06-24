@@ -44,32 +44,71 @@ def processPriceUpdate(item, myUpdateField):
     point_profit = 0
     # calcul du pnl pour chaque pos de l'epic actif
     for dealId in globalvar.dict_openposition:
+        deal = globalvar.dict_openposition.get(dealId)
+        # on récupère l'epic
+        epic = deal.get('epic')
         # on récupère le sens pour chaque pos
-        epic = globalvar.dict_openposition.get(dealId).get('epic')
-        # on récupère le sens pour chaque pos
-        direction = globalvar.dict_openposition.get(dealId).get('direction')
+        direction = deal.get('direction')
         # on récupère l'open pour chaque pos
-        open_level = globalvar.dict_openposition.get(dealId).get('open_level')
+        open_level = deal.get('open_level')
+        # on récupère le TP pour chaque pos
+        tp = deal.get('limit_level')
+        # on récupère le SL pour chaque pos
+        sl = deal.get('stop_level')
         # on récupère la size pour chaque pos
-        size = globalvar.dict_openposition.get(dealId).get('size')
+        size = deal.get('size')
+        # on récupère un T/F indiquant si la position est en stop garantie
+        guaranteedStop = deal.get('guaranteedStop')
 
-        # Calcul pnl en points de chaque position
-        # Exclusion des lignes qui ne sont pas dans bon epic####
+        # calcul pnl en points de chaque position
+        # Exclusion des lignes qui ne sont pas dans bon epic
+        #  +
+        # Move du stop level si la distance avec l'open level est suffisante.
+        ## Optim : Faire 2 fonctions distinctes.
         if epic == personal.epic:
             if direction == 'BUY':
-                # Ajout du scalingFactor * la taille
-                point_profit = round((float(ask) - float(open_level)) *
-                                     globalvar.scalingFactor * size, 1)
+                distance_to = ((float(ask) - float(open_level))
+                               * globalvar.scalingFactor)
             elif direction == 'SELL':
-                # Ajout du scalingFactor * la taille
-                point_profit = round((float(open_level) - float(bid)) *
-                                     globalvar.scalingFactor * size, 1)
-            sum_point = sum_point + point_profit
+                distance_to = ((float(open_level) - float(bid))
+                               * globalvar.scalingFactor)
+                
+            pos_pnlperlot = round(distance_to, 1)
+            pos_pnl = round(distance_to * float(size), 1)
+            sum_point += pos_pnl
+            # print("dealId,pos_pnlperlot, pos_pnl, size, distance_to",
+            #       dealId, pos_pnlperlot, pos_pnl, size, distance_to,
+            #       sum_point)
+            
+            if globalvar.is_AutoStop_to_OpenLevel:
+                if guaranteedStop :
+                    # print(" guaranteedStop", dealId)
+                    stopMinDistance = globalvar.minControlledRiskStopDistance
+                else:
+                    # print(" NOT guaranteedStop", dealId)
+                    stopMinDistance = globalvar.minNormalStoporLimitDistance
+                             
+                if (((direction == 'BUY' and (sl < open_level or sl is None))
+                      or 
+                        (direction == 'SELL' and (sl > open_level or sl is None) )
+                    ) and distance_to >= stopMinDistance):
+                    print("processPriceUpdate:"
+                          "try to move the stop to the open level",
+                          sl, open_level)
+                    updateLimit(dealId, open_level, tp)
         else:
-            point_profit = 'N/A'
-        globalvar.dict_openposition[dealId]['pnl'] = point_profit
+            pos_pnlperlot = 'N/A'
+            pos_pnl = 'N/A'
+            
+        globalvar.dict_openposition[dealId]['pnl'] = pos_pnl
+        globalvar.dict_openposition[dealId]['pnlperlot'] = pos_pnlperlot
+        
+        # print("dealId, float(open_level)", dealId, float(open_level))
+        # print("pos_pnlperlot",pos_pnlperlot)
+        # print("pos_pnl", pos_pnl)
+                              
     # print("Après la boucle For du dico de position")
-    
+
     window.update_price(bid, ask, sum_point)
 
 
@@ -82,11 +121,11 @@ def processBalanceUpdate(item, myUpdateField):
     """
     # print("--- processBalanceUpdate ---")
     # print(myUpdateField)
-    balance, pnl, deposit = myUpdateField
-    # Déplacement du code qui compte le nb de pos
+    globalvar.balance, pnl, globalvar.deposit = myUpdateField
+    # Deplacement du code qui compte le nb de pos
     # et la taille agregee des lots pour l'epic donne dans processPositionUpdate
     # Ajout deposit
-    window.update_balance(balance, pnl, deposit)
+    window.update_balance(globalvar.balance, pnl, globalvar.deposit)
 
 
 def processPositionUpdate(item, myUpdateField):
@@ -136,10 +175,12 @@ def processPositionUpdate(item, myUpdateField):
             open_values = {'epic': opu.get(u'epic'),
                            'size': opu.get(u'size'),
                            'direction': opu.get(u'direction'),
-                           'open_level': opu.get(u'level'),
-                           'limit_level': opu.get(u'limitLevel'),
-                           'stop_level': opu.get(u'stopLevel'),
-                           'pnl': 'N/A'
+                           'open_level':opu.get(u'level'),
+                           'limit_level':opu.get(u'limitLevel'),
+                           'stop_level':opu.get(u'stopLevel'),
+                           'guaranteedStop':opu.get(u'guaranteedStop'),
+                           'pnlperlot':'N/A',
+                           'pnl':'N/A'
                            }
             # Enregistrement de la position dans le dico
             globalvar.dict_openposition.update({dealId:open_values})
@@ -163,35 +204,39 @@ def processPositionUpdate(item, myUpdateField):
             update_countTicket()
 
             # Guilux modif pouir afficher le PNL Journalier
-            pnlEuro,pnlPoints,nbTrades = getDailyPnl() #Calcul du PNL journalier
-            window.update_pnlDaily(pnlEuro,pnlPoints,nbTrades)
+            # Calcul du PNL journalier
+            pnlEuro, pnlPoints, pnlPointsPerLot, nbTrades = getDailyPnl()
+            window.update_pnlDaily(pnlEuro, pnlPoints,
+                                   pnlPointsPerLot, nbTrades)
 
         elif opu.get('status') == u'UPDATED':
-            # print("Mise a jour ticket")
-            # udpate_values = [opu.get(u'epic'), opu.get(u'size'),
-            #                  opu.get(u'direction'), opu.get(u'level'),
-            #                  opu.get(u'limitLevel'), opu.get(u'stopLevel')]
-            # MàJ avec la v2 du dico
-            udpate_values = {'epic': opu.get(u'epic'),
-                             'size': opu.get(u'size'),
+            #print("Mise a jour ticket")
+            #udpate_values = [opu.get(u'epic'), opu.get(u'size'), opu.get(u'direction'), opu.get(u'level'), opu.get(u'limitLevel'), opu.get(u'stopLevel')]
+            #MàJ avec la v2 du dico
+            udpate_values = {'epic': opu.get(u'epic'), 'size': opu.get(u'size'),
                              'direction': opu.get(u'direction'),
                              'open_level': opu.get(u'level'),
-                             'limit_level': opu.get(u'limitLevel'),
-                             'stop_level': opu.get(u'stopLevel'),
-                             'pnl': 'N/A'
+                             'limit_level':opu.get(u'limitLevel'),
+                             'stop_level':opu.get(u'stopLevel'),
+                             'guaranteedStop':opu.get(u'guaranteedStop'),
+                             'pnlperlot':'N/A',
+                             'pnl':'N/A'
                              }
-            globalvar.dict_openposition[dealId] = udpate_values  # MàJ du dico
+            # MàJ du dico
+            globalvar.dict_openposition[dealId] = udpate_values
             # print(globalvar.dict_openposition)
             # Envoi le dictionnaire à afficher
             window.set_openpositions(globalvar.dict_openposition)
             pru = PRU(personal.epic)
             window.update_pru(pru)
             update_countTicket()
-
+            
             # Guilux modif pouir afficher le PNL Journalier
             # Calcul du PNL journalier
-            pnlEuro, pnlPoints, nbTrades = getDailyPnl()
-            window.update_pnlDaily(pnlEuro,pnlPoints,nbTrades)
+            pnlEuro,pnlPoints,pnlPointsPerLot,nbTrades = getDailyPnl()
+            window.update_pnlDaily(pnlEuro, pnlPoints,
+                                   pnlPointsPerLot, nbTrades)
+
         else:
             print("Autre status non gere : %s",opu.get('status'))
     # else:
@@ -324,13 +369,22 @@ def get_openPositions():
     sizeSell = 0
     nb_ticket = 0
     for p in s:
-        dealId = p.get("position").get("dealId")  # Sens
-        d = p.get("position").get("direction")  # Sens
-        s = p.get("position").get("dealSize")  # Taille du contrat
-        ol = p.get("position").get("openLevel")  # Cours d'ouverture
-        sl = p.get("position").get("stopLevel")  # SL
-        ll = p.get("position").get("limitLevel")  # TP
-        e = p.get("market").get("epic")  # sous-jacent
+        # DealID
+        dealId = p.get("position").get("dealId")
+        # Sens
+        d = p.get("position").get("direction")
+        # Taille du contrat
+        s = p.get("position").get("dealSize")
+        # Cours d'ouverture
+        ol = p.get("position").get("openLevel")
+        # SL
+        sl = p.get("position").get("stopLevel")
+        # TP
+        ll = p.get("position").get("limitLevel")
+        # sous-jacent
+        e = p.get("market").get("epic")
+        # Stop Garantie
+        guaranteedStop = p.get("position").get("controlledRisk")
         if e == personal.epic:
             if d == "BUY":
                 sizeBuy += s
@@ -338,17 +392,19 @@ def get_openPositions():
             elif d == "SELL":
                 sizeSell += s
                 nb_ticket += 1
-        # # Ajout position dans le dictionnaire
-        # # "dealdId":[epic, size, direction, openLevel, TP, SL]`
-        # globalvar.dict_openposition.update({dealId: [e, s, d, ol, ll, sl]})
+        # Ajout position dans le dictionnaire "dealdId":[epic, size, direction, openLevel, TP, SL]`
+        # globalvar.dict_openposition.update({dealId:[e,s, d, ol, ll, sl]})
         # MàJ avec la v2 du dico
-        globalvar.dict_openposition.update({dealId: {"epic": e,
-                                                     "size": s,
-                                                     "direction": d,
-                                                     "open_level": ol,
-                                                     "limit_level": ll,
-                                                     "stop_level": sl,
-                                                     "pnl": 'N/A'}})
+        new_deal = {"epic": e,
+                    "size": s,
+                    "direction": d,
+                    "open_level": ol,
+                    "limit_level": ll,
+                    "stop_level": sl,
+                    "guaranteedStop": guaranteedStop,
+                    "pnlperlot": 'N/A',
+                    "pnl": 'N/A'}
+        globalvar.dict_openposition.update({dealId: new_deal})
     window.update_pos(nb_ticket, sizeBuy, sizeSell)
     # print("Envoi de =>>>>>>>>>> ", globalvar.dict_openposition)
     window.set_openpositions(globalvar.dict_openposition)  # Ok
@@ -431,11 +487,16 @@ def getDailyPnl():
     sur la journée
 
     :return: 3 vars : (pnlEuro, pnlPoints, nbTrades)
+
+    NOTE: Fonction dans main, déplacer dans events pour pouvoir être utilisé
+    dans main et event sans imports de main dans events
     """
 
-    pnlEuro = 0.0         # PNL en Euro
-    nbTrades = 0          # Nombre de trades
-    pnlPoints = 0.0       # PNL en points
+    pnlEuro=0.0                  # PNL en Euro
+    nbTrades=0                   # Nombre de trades
+    pnlPoints = 0.0              # PNL en points
+    pnlPoints_per_lot= 0.0       # PNL en points par lot
+    size=0.0
 
     # recup de la date du jour
     daydate = time.strftime('%d-%m-%Y', time.localtime())
@@ -447,46 +508,47 @@ def getDailyPnl():
     s = json.loads(r.content).get(u'transactions')
 
     for gain in s:
-        # On ne calcule que si le type de la transaction est "ordre"
         if gain.get(u'transactionType') == 'ORDRE':
-            # Calcul du PNL Journalier en Euro
+            # On ne calcule que si le type de la transaction est "ordre"
+
+            # Calcul du PNL Journalier en Euro             
             # on recupere le pnl de la transaction
             b = gain.get(u'profitAndLoss')
-            b = b[1:]  # on supprime le 'E'
-            b = b.replace(',', '')  # on supprime la ',' ex 2,500.50 -> 2500.50
-            pnlEuro += float(b)  # on additionne toutes les transactions
+            # on supprime le 'E'
+            b = b[1:]
+            # on supprime la ',' ex 2,500.50 -> 2500.50
+            b = b.replace(',', '')
+            # on additionne toutes les transactions
+            pnlEuro += float(b)
 
-            # Calcul du nombre de point
-            openLevel = gain.get(u'openLevel')  # recupere opellevel
-            closeLevel = gain.get(u'closeLevel')  # recupere closelevel
+            # Calcul du nombre de point                    
+            # recupere openlevel
+            openLevel = gain.get(u'openLevel')
+            # recupere closelevel
+            closeLevel = gain.get(u'closeLevel')
 
             # recupere la taille pour avoir le sens (+ ou -)
-            directionLevel =  gain.get(u'size')
-            size = directionLevel[1:]
-            # split pour recuperer '+' ou '-'
-            directionLevel = directionLevel[:1]
-
-            # si + la difference est close - open
-            if directionLevel == '+':
-                 diffLevel = float(closeLevel) - float(openLevel)
-                 diffLevel = diffLevel * float(size)
-                 # on arrondi pour ne pas avoir 0,2999999 point
-                 diffLevel = round(diffLevel, 1)
-
-            # si - la difference est open-close
-            if directionLevel == '-':
-                 diffLevel = float(openLevel) - float(closeLevel)
-                 diffLevel = diffLevel * float(size)
-                 # on arrondi pour ne pas avoir 0,2999999 point
-                 diffLevel = round(diffLevel, 1)
-
-            # print(str(diffLevel) + '(' + directionLevel + '' + size + ')' +
-            #       ' p: ' + str(diffLevel))
-
-            # on additionne les points (+ et-)
+            size =  float(gain.get(u'size'))
+            # print("getDailyPnl : size ", size)
+            
+            distance_to_close = float(closeLevel) - float(openLevel)
+            
+            # on arrondi pour ne pas avoir 0,2999999 point
+            diffLevel = round(distance_to_close * size, 1)
+            diffLevel_per_lot = round(distance_to_close * size / size, 1)
+            
+            # print("closeLevel,openLevel,size,diffLevel,"
+            #       "diffLevel_per_lot,distance_to_close",
+            #       closeLevel, openLevel, size, diffLevel, diffLevel_per_lot,
+            #       distance_to_close)
+            # on additionne les points (+ et -)
             pnlPoints += diffLevel
-
+            pnlPoints_per_lot += diffLevel_per_lot
+            
             # Incrementation du nombre de trades
             nbTrades += 1
-
-    return pnlEuro, pnlPoints, nbTrades
+            
+    # print("getDailyPnl : renvoi des 4 variables (pnlEuro, pnlPoints"
+    #       ", pnlPoints_per_lot, nbTrades)",
+    #       pnlEuro, pnlPoints, pnlPoints_per_lot, nbTrades)
+    return pnlEuro, pnlPoints, pnlPoints_per_lot, nbTrades

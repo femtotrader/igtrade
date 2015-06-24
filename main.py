@@ -37,12 +37,12 @@ import globalvar
 
 def buy(event):
     order(event, "BUY", globalvar.requestDealSize, globalvar.isForceOpen,
-          globalvar.SLpoint, globalvar.TPpoint, globalvar.isStopGuaranteed)
+          globalvar.SLpoint, globalvar.TPpoint, globalvar.isGuaranteedStopTrading)
 
 
 def sell(event):
     order(event, "SELL", globalvar.requestDealSize, globalvar.isForceOpen,
-          globalvar.SLpoint, globalvar.TPpoint, globalvar.isStopGuaranteed)
+          globalvar.SLpoint, globalvar.TPpoint, globalvar.isGuaranteedStopTrading)
 
 
 def order(event, direction, reqDealSize, isForceOpen,
@@ -55,19 +55,20 @@ def order(event, direction, reqDealSize, isForceOpen,
         globalvar.dealSizeDelta = 0
     body = {"currencyCode": globalvar.currencyCode, "epic": personal.epic,
             "expiry": expiry, "direction": direction, "size": reqDealSize,
-            "forceOpen": isForceOpen, "guaranteedStop": False,
-            "orderType": "MARKET", "limitDistance": TPpoint,
-            "stopDistance": SLpoint, "guaranteedStop": isStopGuaranteed
+            "forceOpen": isForceOpen, "orderType": "MARKET",
+            "limitDistance": TPpoint, "stopDistance": SLpoint,
+            "guaranteedStop": isStopGuaranteed
             }
     r = requests.post(urls.neworderurl, data=json.dumps(body),
                       headers=urls.fullheaders, proxies=personal.proxies)
+
     if r.status_code == 200:
         dealReference = r.json().get(u'dealReference')
         print("-- Fonction order ---\n   Ok Code %s" % r.status_code)
         ###Debug dans la console, je met en commentaire car le message d'erreur du trade apparait dans la sous-fenêtre OPU###
         ###print("-- Fonction order --- Order Ok\n    Code %s\n    Reponse %s"%(r.status_code, r.content))
         ###r = requests.get(urls.confirmsurl%(dealReference), headers=urls.fullheaders, proxies=personal.proxies)
-    	###if r.status_code == 200:
+        ###if r.status_code == 200:
         ###    s = json.loads(r.content)
         ###    #print("-- Fonction order --- Confirms Ok\n    Code %s\n    URL %s\n    Reponse %s"%(r.status_code,urls.confirmsurl%(dealReference), r.content))
         ###    print("-- Fonction order --- Confirms Ok\n    Code %s\n    URL %s\n    Status %s\n    Reason %s\n    dealStatus %s"%(r.status_code,urls.confirmsurl%(dealReference), s.get(u'status'), s.get(u'reason'), s.get(u'dealStatus')))
@@ -101,9 +102,8 @@ def calculatePivots():
 
 
 def pollingMarketsDetails(period=60):
-    """Lance la comman de getmarketDetail dans un thread toute
-    les 'period' secondes pour mettre à jour
-    les variables de deadling du contrat.
+    """Lance la comman de getmarketDetail dans un thread toute les 'period'
+    secondes pour mettre à jour les variables de deadling du contrat.
 
     :param period:
     :return:
@@ -173,12 +173,14 @@ def getMarketsDetails():
     s = j.get(u'snapshot')  # Sous-partie snapshot
     scaling_factor = float(s.get(u'scalingFactor'))
     # print("--- Fonction getMarketsDetails ---  ", min_deal_size,
-    #       currencies_code, value_of_one_pip, scaling_factor)
+    #       currencies_code, value_of_one_pip, value_of_one_pip,
+    #       min_normal_stop_or_limit_distance, min_controlled_risk_stop_distance)
+    # print("--- Fonction getMarketsDetails ---  ", min_deal_size,
+    #       currencies_code, value_of_one_pip, value_of_one_pip)
     # renvoi une valeur en point et la monnaie d'execution, la valeur d'un pip
     return (min_deal_size, currencies_code, value_of_one_pip, scaling_factor,
             min_normal_stop_or_limit_distance,
             min_controlled_risk_stop_distance)
-
 
 def getDailyPrices():
     url = 'https://%s/gateway/deal/prices/%s/%s/%d' % \
@@ -209,12 +211,12 @@ def OnKeyPress(event):
             print("Left")
             order(event, "SELL", globalvar.requestDealSize,
                   globalvar.isForceOpen, globalvar.SLpoint, globalvar.TPpoint,
-                  globalvar.isStopGuaranteed)
+                  globalvar.isGuaranteedStopTrading)
         if code == wx.WXK_RIGHT:
             print("Right")
             order(event, "BUY", globalvar.requestDealSize,
                   globalvar.isForceOpen, globalvar.SLpoint, globalvar.TPpoint,
-                  globalvar.isStopGuaranteed)
+                  globalvar.isGuaranteedStopTrading)
         if code == wx.WXK_DOWN:
             print("Down")
             # Appel de la fonction pour fermer tous les ordres ouverts
@@ -487,16 +489,20 @@ def main(event):
         window.SL_point.Bind(wx.EVT_TEXT, window.update_SLpoint)
         window.TP_point.Bind(wx.EVT_TEXT, window.update_TPpoint)
         window.SL_currency.Bind(wx.EVT_TEXT, window.update_SLcurrency)
+        window.SL_percentage.Bind(wx.EVT_TEXT, window.update_SL_percentage)
         window.is_Force_Open_box.Bind(wx.EVT_CHECKBOX, window.update_forceOpen)
+
         window.is_Keyboard_Trading_box.Bind(wx.EVT_CHECKBOX,
                                             window.update_keyboardtrading)
+        window.is_AutoStop_to_OpenLevel_box.Bind(wx.EVT_CHECKBOX,
+                                                 window.update_AutoStop_to_OpenLevel)
         window.openpositions_list.Bind(wx.EVT_LIST_ITEM_SELECTED,
                                        window.OnClick_openpositionslist)
         # Intercepte l'équivalent du key-down.
         window.panel.Bind(wx.EVT_CHAR_HOOK, OnKeyPress)
         window.closeAll_button.Bind(wx.EVT_BUTTON, CloseAllButton)
-        window.is_Stop_Guaranteed_box.Bind(wx.EVT_CHECKBOX,
-                                           window.update_stopGuaranteed)
+        window.is_GuaranteedStop_Trading_box.Bind(wx.EVT_CHECKBOX,
+                                                  window.update_guaranteedStopTrading)
         window.SLto0_button.Bind(wx.EVT_BUTTON, SLto0)
         window.TPto0_button.Bind(wx.EVT_BUTTON, TPto0)
         window.SLtoPRU_button.Bind(wx.EVT_BUTTON, SLtoPRU)
@@ -510,8 +516,8 @@ def main(event):
 
         # Ajout Guilux pour afficher le PNL Journalier
         # Calcul du PNL journalier
-        pnlEuro,pnlPoints,nbTrades = events.getDailyPnl()
-        window.update_pnlDaily(pnlEuro,pnlPoints,nbTrades)
+        (pnlEuro, pnlPoints, pnlPointsPerLot, nbTrades) = events.getDailyPnl()
+        window.update_pnlDaily(pnlEuro, pnlPoints, pnlPointsPerLot, nbTrades)
         
         # Polling toutes les X secondes des caracteristique du contrat.
         pollingThread = threading.Thread(target=pollingMarketsDetails,
