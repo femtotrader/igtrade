@@ -1,6 +1,7 @@
-username = 'demo-user'
-password = 'password'
-liveOrDemo = "Demo"
-APIkey = "**********************************"
-epic = 'IX.D.DAX.IMF.IP' # Pour le DAX 30
-
+username = u''
+password = ''
+is_demo = True
+proxies = {'https': u''}
+epic = 'CC.D.LCO.UME.IP'
+account_nb = u'0'
+api_key = u''
