@@ -42,25 +42,27 @@ import globalvar
 
 def buy(event):
     order(event, "BUY", globalvar.requestDealSize, globalvar.isForceOpen,
-          globalvar.SLpoint, globalvar.TPpoint, globalvar.isGuaranteedStopTrading)
+          globalvar.SLpoint, globalvar.TPpoint,
+          globalvar.isGuaranteedStopTrading)
 
 
 def sell(event):
     order(event, "SELL", globalvar.requestDealSize, globalvar.isForceOpen,
-          globalvar.SLpoint, globalvar.TPpoint, globalvar.isGuaranteedStopTrading)
+          globalvar.SLpoint, globalvar.TPpoint,
+          globalvar.isGuaranteedStopTrading)
 
 
-def order(event, direction, reqDealSize, isForceOpen,
+def order(event, direction, req_deal_size, is_force_open,
           SLpoint, TPpoint, isStopGuaranteed):
     expiry = '-'
-    if reqDealSize < globalvar.minDealSize:
-        globalvar.dealSizeDelta = globalvar.minDealSize - reqDealSize
-        reqDealSize = globalvar.minDealSize
+    if req_deal_size < globalvar.minDealSize:
+        globalvar.dealSizeDelta = globalvar.minDealSize - req_deal_size
+        req_deal_size = globalvar.minDealSize
     else:
         globalvar.dealSizeDelta = 0
     body = {"currencyCode": globalvar.currencyCode, "epic": personal.epic,
-            "expiry": expiry, "direction": direction, "size": reqDealSize,
-            "forceOpen": isForceOpen, "orderType": "MARKET",
+            "expiry": expiry, "direction": direction, "size": req_deal_size,
+            "forceOpen": is_force_open, "orderType": "MARKET",
             "limitDistance": TPpoint, "stopDistance": SLpoint,
             "guaranteedStop": isStopGuaranteed
             }
@@ -70,23 +72,36 @@ def order(event, direction, reqDealSize, isForceOpen,
     if r.status_code == 200:
         dealReference = r.json().get(u'dealReference')
         print("-- Fonction order ---\n   Ok Code %s" % r.status_code)
-        ###Debug dans la console, je met en commentaire car le message d'erreur du trade apparait dans la sous-fenêtre OPU###
-        ###print("-- Fonction order --- Order Ok\n    Code %s\n    Reponse %s"%(r.status_code, r.content))
-        ###r = requests.get(urls.confirmsurl%(dealReference), headers=urls.fullheaders, proxies=personal.proxies)
-        ###if r.status_code == 200:
-        ###    s = json.loads(r.content)
-        ###    #print("-- Fonction order --- Confirms Ok\n    Code %s\n    URL %s\n    Reponse %s"%(r.status_code,urls.confirmsurl%(dealReference), r.content))
-        ###    print("-- Fonction order --- Confirms Ok\n    Code %s\n    URL %s\n    Status %s\n    Reason %s\n    dealStatus %s"%(r.status_code,urls.confirmsurl%(dealReference), s.get(u'status'), s.get(u'reason'), s.get(u'dealStatus')))
-        ###else:
-        ###    print("--- Fonction order --- Confirms Erreur\n    Erreur Code %s\n    URL %s\n    Reponse %s"%(r.status_code,urls.confirmsurl%(dealReference), r.content))
+        # Debug dans la console, je met en commentaire car le message d'erreur
+        # du trade apparait dans la sous-fenêtre OPU###
+        # print("-- Fonction order --- Order Ok\n"
+        #       "    Code %s\n    Reponse %s" % (r.status_code, r.content))
+        # r = requests.get(urls.confirmsurl % dealReference,
+        #                  headers=urls.fullheaders, proxies=personal.proxies)
+        # if r.status_code == 200:
+        #     s = json.loads(r.content)
+        #     # print("-- Fonction order --- Confirms Ok\n    Code %s\n"
+        #     #       "    URL %s\n    Reponse %s" %
+        #     #       (r.status_code, urls.confirmsurl % dealReference,
+        #     #        r.content))
+        #     print("-- Fonction order --- Confirms Ok\n    Code %s\n"
+        #           "    URL %s\n    Status %s\n    Reason %s\n"
+        #           "    dealStatus %s" %
+        #           (r.status_code, urls.confirmsurl % dealReference,
+        #            s.get(u'status'), s.get(u'reason'), s.get(u'dealStatus')))
+        # else:
+        #     print("--- Fonction order --- Confirms Erreur\n"
+        #           "    Erreur Code %s\n    URL %s\n    Reponse %s" %
+        #           (r.status_code, urls.confirmsurl % dealReference,
+        #            r.content))
     else:
         print("--- Fonction order ---\n"
               "    Erreur Code %s\n"
               "    Body %s\n"
-              "    Reponse %s" % (r.status_code,body, r.content))
+              "    Reponse %s" % (r.status_code, body, r.content))
 
 
-def calculatePivots():
+def calculate_pivots():
     r = requests.get(urls.pricesurl % (personal.epic, 'DAY'),
                      headers=urls.fullheaders, proxies=personal.proxies)
     s = json.loads(r.content).get('prices')[0]
@@ -106,7 +121,7 @@ def calculatePivots():
     return s3, s2, s1, pivot, r1, r2, r3
 
 
-def pollingMarketsDetails(period=60):
+def polling_markets_details(period=60):
     """Lance la comman de getmarketDetail dans un thread toute les 'period'
     secondes pour mettre à jour les variables de deadling du contrat.
 
@@ -116,7 +131,7 @@ def pollingMarketsDetails(period=60):
     while True:
         (globalvar.minDealSize, globalvar.currencyCode, globalvar.valueOfOnePip,
          globalvar.scalingFactor, globalvar.minNormalStoporLimitDistance,
-         globalvar.minControlledRiskStopDistance) = getMarketsDetails()
+         globalvar.minControlledRiskStopDistance) = get_markets_details()
         # DEBUG START
         # globalvar.minNormalStoporLimitDistance += random.randint(1,10)
         # print("pollingMarketsDetails %ssecondes %s - minStopNormal=%s - "
@@ -127,7 +142,7 @@ def pollingMarketsDetails(period=60):
         time.sleep(period)
 
 
-def getMarketsDetails():
+def get_markets_details():
     """Ajout falex pour récuperation du minDealSize de l'epic choisi
 
     :return:
@@ -164,7 +179,7 @@ def getMarketsDetails():
     # print(nsd)
     if nsd.get(u'unit') == u'POINTS':
         min_normal_stop_or_limit_distance = nsd.get(u'value')
-        # print("minNormalStoporLimitDistance %s" %
+        # print("min_normal_stop_or_limit_distance %s" %
         #       min_normal_stop_or_limit_distance)
          
     min_controlled_risk_stop_distance = None
@@ -177,17 +192,18 @@ def getMarketsDetails():
          
     s = j.get(u'snapshot')  # Sous-partie snapshot
     scaling_factor = float(s.get(u'scalingFactor'))
-    # print("--- Fonction getMarketsDetails ---  ", min_deal_size,
+    # print("--- Function getMarketsDetails ---  ", min_deal_size,
     #       currencies_code, value_of_one_pip, value_of_one_pip,
     #       min_normal_stop_or_limit_distance, min_controlled_risk_stop_distance)
-    # print("--- Fonction getMarketsDetails ---  ", min_deal_size,
+    # print("--- Function getMarketsDetails ---  ", min_deal_size,
     #       currencies_code, value_of_one_pip, value_of_one_pip)
     # renvoi une valeur en point et la monnaie d'execution, la valeur d'un pip
     return (min_deal_size, currencies_code, value_of_one_pip, scaling_factor,
             min_normal_stop_or_limit_distance,
             min_controlled_risk_stop_distance)
 
-def getDailyPrices():
+
+def get_daily_prices():
     url = 'https://%s/gateway/deal/prices/%s/%s/%d' % \
           (urls.ig_host, personal.epic, 'MINUTE', 100000)
     r = requests.get(url, headers=urls.fullheaders, proxies=personal.proxies)
@@ -197,7 +213,7 @@ def getDailyPrices():
         pickle.dump(s, f)
 
 
-def OnKeyPress(event):
+def on_key_press(event):
     # print(" Fonction Main OnKeyPress ")
     code = event.GetKeyCode()
     if globalvar.isKeyBoardTrading:
@@ -226,7 +242,7 @@ def OnKeyPress(event):
             print("Down")
             # Appel de la fonction pour fermer tous les ordres ouverts
             # avec une copie du dictionnaire
-            CloseAll()
+            close_all()
         """
         if code == wx.WXK_ESCAPE:
             print("Escape")
@@ -237,11 +253,11 @@ def OnKeyPress(event):
     # print(" Fin ")
 
 
-def CloseAllButton(event):
-    CloseAll()
+def close_all_button(event):
+    close_all()
 
 
-def CloseAll():
+def close_all():
     # print ("--- Fonction CloseAll ---")
     for deal_id_to_delete, v in globalvar.dict_openposition.items():
         direction = v.get('direction')
@@ -251,7 +267,7 @@ def CloseAll():
     # print(" Fin ")
 
 
-def CloseAllepicButton(event):
+def close_all_epic_button(event):
     # print ("--- Fonction Close All epic ---")
     for deal_id_to_delete, v in globalvar.dict_openposition.items():
         if v.get('epic') == personal.epic:
@@ -262,7 +278,7 @@ def CloseAllepicButton(event):
     # print("--- Fin Close All epic ---")
 
 
-def SLto0(event):
+def sl_to_zero(event):
     # print("SL to 0 ", personal.epic)
     for deal_id in globalvar.dict_openposition:
         deal = globalvar.dict_openposition.get(deal_id)
@@ -272,7 +288,7 @@ def SLto0(event):
             events.update_limit(deal_id, o, tp)
 
 
-def SLto0spread(event):
+def sl_to_zero_spread(event):
     # print("SL to 0 - spread ", personal.epic)
     for deal_id in globalvar.dict_openposition:
         deal = globalvar.dict_openposition.get(deal_id)
@@ -283,35 +299,41 @@ def SLto0spread(event):
             events.update_limit(deal_id, o, tp)
 
 
-def TPto0(event):
+def tp_to_zero(event):
     # print("TP to 0 - ", personal.epic)
     # print("globalvar.dict_openposition", globalvar.dict_openposition)
-    for dealId in globalvar.dict_openposition:
-        if globalvar.dict_openposition.get(dealId).get('epic') == personal.epic:
-            o = float(globalvar.dict_openposition.get(dealId).get('open_level'))
-            sl = globalvar.dict_openposition.get(dealId).get('stop_level')
-            events.update_limit(dealId, sl, o)
+    for deal_id in globalvar.dict_openposition:
+        deal = globalvar.dict_openposition.get(deal_id)
+        if deal.get('epic') == personal.epic:
+            o = float(deal.get('open_level'))
+            sl = deal.get('stop_level')
+            events.update_limit(deal_id, sl, o)
+
+
+def sl_to_pru(event):
+    # print("SL to PRU ", personal.epic)
+    pru = events.compute_pru(personal.epic)
+    # print("PRU = %s" % pru)
+    for deal_id in globalvar.dict_openposition:
+        deal = globalvar.dict_openposition.get(deal_id)
+        if deal.get('epic') == personal.epic:
+            tp = deal.get('limit_level')
+            events.update_limit(deal_id, pru, tp)
+
 
 def SLtoPRU(event):
     # print("SL to PRU ", personal.epic)
     pru = events.compute_pru(personal.epic)
     # print("PRU = %s" % pru)
-    for dealId in globalvar.dict_openposition:
-        if globalvar.dict_openposition.get(dealId).get('epic') == personal.epic:
-            tp = globalvar.dict_openposition.get(dealId).get('limit_level')
-            events.update_limit(dealId, pru, tp)
+    for deal_id in globalvar.dict_openposition:
+        deal = globalvar.dict_openposition.get(deal_id)
+        if deal.get('epic') == personal.epic:
+            tp = deal.get('limit_level')
+            events.update_limit(deal_id, pru, tp)
 
-def SLtoPRU(event):
-    # print("SL to PRU ", personal.epic)
-    pru = events.compute_pru(personal.epic)
-    # print("PRU = %s" % pru)
-    for dealId in globalvar.dict_openposition:
-        if globalvar.dict_openposition.get(dealId).get('epic') == personal.epic:
-            tp = globalvar.dict_openposition.get(dealId).get('limit_level')
-            events.update_limit(dealId, pru, tp)
 
 def main(event):
-    loging_window.on_close()
+    logging_window.on_close()
 
     # Connecting to IG
     urls.set_urls()
@@ -352,7 +374,7 @@ def main(event):
         # a defaut de pouvoir utiliser la directive DELETE
         urls.deleteheaders = {'content-type': 'application/json; charset=UTF-8',
                               'Accept': 'application/json; charset=UTF-8',
-                              'version':1,  'X-IG-API-KEY': personal.api_key,
+                              'version': 1,  'X-IG-API-KEY': personal.api_key,
                               'CST': cst, 'X-SECURITY-TOKEN': xsecuritytoken,
                               '_method': 'DELETE'}
 
@@ -367,11 +389,11 @@ def main(event):
         body = r.json()
 
         # Recupére l'url d'accès à LS
-        lightstreamerEndpoint = body.get(u'lightstreamerEndpoint')
+        lightstreamer_end_point = body.get(u'lightstreamerEndpoint')
         # Récupére le clientId
-        clientId = body.get(u'clientId')
+        client_id = body.get(u'clientId')
         # Récupére l'Id du compte actif
-        currentAccountId = body.get(u'currentAccountId')
+        current_account_id = body.get(u'currentAccountId')
         # récupére le dictionnaire avec les comptes disponibles
         accounts = body.get(u'accounts')
 
@@ -385,7 +407,7 @@ def main(event):
 
         # Switching de compte si necessaire
         new_id_account = accounts[int(personal.account_nb)].get(u'accountId')
-        if currentAccountId != new_id_account:
+        if current_account_id != new_id_account:
             # print("Current et compte selectionne sont different, "
             #       "Il faut switch le compte avant de l'utiliser")
             # Il faut switcher le compte
@@ -417,62 +439,62 @@ def main(event):
         # Depending on how many accounts you have with IG the '0' may need
         # to change to select the correct one (spread bet, CFD account etc)
         # Update with the user account choices.
-        accountId = accounts[int(personal.account_nb)].get(u'accountId')
-        accountName = accounts[int(personal.account_nb)].get(u'accountName')
+        account_id = accounts[int(personal.account_nb)].get(u'accountId')
+        account_name = accounts[int(personal.account_nb)].get(u'accountName')
 
         # Connexion LS
-        client = igls.LsClient(lightstreamerEndpoint+"/lightstreamer/")
+        client = igls.LsClient(lightstreamer_end_point + "/lightstreamer/")
         client.on_state.listen(events.on_state)
-        client.create_session(username=accountId,
+        client.create_session(username=account_id,
                               password='CST-' + cst + '|XST-' + xsecuritytoken,
                               adapter_set='')
 
         # Binding sur les differents flux de stream et fonctions associés
-        priceTable = igls.Table(client,
+        price_table = igls.Table(client,
                                 mode=igls.MODE_MERGE,
                                 item_ids='MARKET:%s' % personal.epic,
                                 schema="OFFER BID",
                                 )
         
-        priceTable.on_update.listen(events.process_price_update)
+        price_table.on_update.listen(events.process_price_update)
 
         # Ajout DEPOSIT pour test
-        balanceTable = igls.Table(client,
+        balance_table = igls.Table(client,
                                   mode=igls.MODE_MERGE,
-                                  item_ids='ACCOUNT:' + accountId,
+                                  item_ids='ACCOUNT:' + account_id,
                                   schema='AVAILABLE_CASH PNL DEPOSIT',
                                   )
 
-        balanceTable.on_update.listen(events.process_balance_update)
+        balance_table.on_update.listen(events.process_balance_update)
 
         # Modif falex
         # Je garde uniquement OPU pour avoir
         # les updates de status des positions en cours
-        positionTable = igls.Table(client,
+        position_table = igls.Table(client,
                                    mode=igls.MODE_DISTINCT,
-                                   item_ids='TRADE:' + accountId,
+                                   item_ids='TRADE:' + account_id,
                                    schema='OPU',
                                    )
 
-        positionTable.on_update.listen(events.process_position_update)
+        position_table.on_update.listen(events.process_position_update)
 
         # Ajout falex
         # Je ne garde que CONFIRMS
-        tradeTable = igls.Table(client,
+        trade_table = igls.Table(client,
                                 mode=igls.MODE_DISTINCT,
-                                item_ids='TRADE:' + accountId,
+                                item_ids='TRADE:' + account_id,
                                 schema='CONFIRMS',
                                 )
 
-        tradeTable.on_update.listen(events.process_trade_update)
+        trade_table.on_update.listen(events.process_trade_update)
 
-        pivots = calculatePivots()  # Calcul les PP en Daily/formule classique
+        pivots = calculate_pivots()  # Calcul les PP en Daily/formule classique
 
         # Récupére la taille min d'ouverture d'un ticket et la monnaie d'échange
         (globalvar.minDealSize, globalvar.currencyCode,
          globalvar.valueOfOnePip, globalvar.scalingFactor,
          globalvar.minNormalStoporLimitDistance,
-         globalvar.minControlledRiskStopDistance) = getMarketsDetails()
+         globalvar.minControlledRiskStopDistance) = get_markets_details()
 
         # DEBUG
         # print("Main retour fonction getMarketsDetails ==>>\n    ",
@@ -488,7 +510,7 @@ def main(event):
         epic_shortname = globalvar.epic_to_shortname_dict.get(personal.epic)
         window = gui_main.Window(None, pivots=pivots,
                                  title='L3 scalping - ' + globalvar.version +
-                                       ' - ' + accountId + " - " + accountName +
+                                       ' - ' + account_id + " - " + account_name +
                                        " - " + epic_shortname,
                                  currencyCode=globalvar.currencyCode,
                                  size=WIN_SIZE)
@@ -508,14 +530,14 @@ def main(event):
         window.openpositions_list.Bind(wx.EVT_LIST_ITEM_SELECTED,
                                        window.OnClick_openpositionslist)
         # Intercepte l'équivalent du key-down.
-        window.panel.Bind(wx.EVT_CHAR_HOOK, OnKeyPress)
-        window.closeAll_button.Bind(wx.EVT_BUTTON, CloseAllButton)
+        window.panel.Bind(wx.EVT_CHAR_HOOK, on_key_press)
+        window.closeAll_button.Bind(wx.EVT_BUTTON, close_all_button)
         window.is_GuaranteedStop_Trading_box.Bind(wx.EVT_CHECKBOX,
                                                   window.update_guaranteedStopTrading)
-        window.SLto0_button.Bind(wx.EVT_BUTTON, SLto0)
-        window.TPto0_button.Bind(wx.EVT_BUTTON, TPto0)
-        window.SLtoPRU_button.Bind(wx.EVT_BUTTON, SLtoPRU)
-        window.closeAllepic_button.Bind(wx.EVT_BUTTON, CloseAllepicButton)
+        window.SLto0_button.Bind(wx.EVT_BUTTON, sl_to_zero)
+        window.TPto0_button.Bind(wx.EVT_BUTTON, tp_to_zero)
+        window.SLtoPRU_button.Bind(wx.EVT_BUTTON, sl_to_pru)
+        window.closeAllepic_button.Bind(wx.EVT_BUTTON, close_all_epic_button)
         # Transmet la variable windows au module events sans passer par
         # la directive globale
         events.window = window
@@ -525,13 +547,15 @@ def main(event):
 
         # Ajout Guilux pour afficher le PNL Journalier
         # Calcul du PNL journalier
-        (pnlEuro, pnlPoints, pnlPointsPerLot, nbTrades) = events.get_daily_pnl()
-        window.update_pnlDaily(pnlEuro, pnlPoints, pnlPointsPerLot, nbTrades)
+        (pnl_euro, pnl_points, pnl_points_per_lot, nb_trades) = \
+            events.get_daily_pnl()
+        window.update_pnlDaily(pnl_euro, pnl_points, pnl_points_per_lot,
+                               nb_trades)
         
         # Polling toutes les X secondes des caracteristiques du contrat.
-        pollingThread = threading.Thread(target=pollingMarketsDetails,
-                                         args=(60,))
-        pollingThread.start()
+        polling_thread = threading.Thread(target=polling_markets_details,
+                                          args=(60,))
+        polling_thread.start()
         
 
 if __name__ == '__main__':
@@ -557,7 +581,7 @@ if __name__ == '__main__':
 
     # Login Window
     app = wx.App()
-    loging_window = gui_login.LogWindow(None, 'L3 scalping V%s - Login' %
-                                        globalvar.version)
-    loging_window.btn_conn.Bind(wx.EVT_BUTTON, main)
+    logging_window = gui_login.LogWindow(None, 'L3 scalping V%s - Login' %
+                                         globalvar.version)
+    logging_window.btn_conn.Bind(wx.EVT_BUTTON, main)
     app.MainLoop()
