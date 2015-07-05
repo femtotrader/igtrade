@@ -43,8 +43,8 @@ def process_price_update(item, my_update_field):
     sum_point = 0
     point_profit = 0
     # calcul du pnl pour chaque pos de l'epic actif
-    for deal_id in globalvar.dict_openposition:
-        deal = globalvar.dict_openposition.get(deal_id)
+    for deal_id in globalvar.dict_open_position:
+        deal = globalvar.dict_open_position.get(deal_id)
         # on récupère l'epic
         epic = deal.get('epic')
         # on récupère le sens pour chaque pos
@@ -68,10 +68,10 @@ def process_price_update(item, my_update_field):
         if epic == personal.epic:
             if direction == 'BUY':
                 distance_to = ((float(ask) - float(open_level))
-                               * globalvar.scalingFactor)
+                               * globalvar.scaling_factor)
             elif direction == 'SELL':
                 distance_to = ((float(open_level) - float(bid))
-                               * globalvar.scalingFactor)
+                               * globalvar.scaling_factor)
                 
             pos_pnl_per_lot = round(distance_to, 1)
             pos_pnl = round(distance_to * float(size), 1)
@@ -80,13 +80,13 @@ def process_price_update(item, my_update_field):
             #       deal_id, pos_pnl_per_lot, pos_pnl, size, distance_to,
             #       sum_point)
             
-            if globalvar.is_AutoStop_to_OpenLevel:
+            if globalvar.is_auto_stop_to_open_level:
                 if guaranteed_stop :
                     # print(" guaranteed_stop", deal_id)
-                    stop_min_distance = globalvar.minControlledRiskStopDistance
+                    stop_min_distance = globalvar.min_controlled_risk_stop_distance
                 else:
                     # print(" NOT guaranteed_stop", deal_id)
-                    stop_min_distance = globalvar.minNormalStoporLimitDistance
+                    stop_min_distance = globalvar.min_normal_stop_or_limit_distance
                              
                 if (((direction == 'BUY' and (sl < open_level or sl is None))
                       or 
@@ -100,8 +100,8 @@ def process_price_update(item, my_update_field):
             pos_pnl_per_lot = 'N/A'
             pos_pnl = 'N/A'
             
-        globalvar.dict_openposition[deal_id]['pnl'] = pos_pnl
-        globalvar.dict_openposition[deal_id]['pnlperlot'] = pos_pnl_per_lot
+        globalvar.dict_open_position[deal_id]['pnl'] = pos_pnl
+        globalvar.dict_open_position[deal_id]['pnlperlot'] = pos_pnl_per_lot
         
         # print("deal_id, float(open_level)", deal_id, float(open_level))
         # print("pos_pnl_per_lot",pos_pnl_per_lot)
@@ -183,22 +183,22 @@ def process_position_update(item, my_update_field):
                            'pnl': 'N/A'
                            }
             # Enregistrement de la position dans le dico
-            globalvar.dict_openposition.update({deal_id: open_values})
+            globalvar.dict_open_position.update({deal_id: open_values})
             # Envoi le dictionnaire à afficher
-            window.set_open_positions(globalvar.dict_openposition)
+            window.set_open_positions(globalvar.dict_open_position)
             pru = compute_pru(personal.epic)
             window.update_pru(pru)
             update_count_ticket()
         elif opu.get('status') == u'DELETED':
             # print("Fermeture position")
             try:
-                del globalvar.dict_openposition[deal_id]
+                del globalvar.dict_open_position[deal_id]
             except KeyError:
                 print("Erreur MaJ dico positions ouvertes")
                 pass
-            # print(globalvar.dict_openposition)
+            # print(globalvar.dict_open_position)
             # Envoi le dictionnaire à afficher
-            window.set_open_positions(globalvar.dict_openposition)
+            window.set_open_positions(globalvar.dict_open_position)
             pru = compute_pru(personal.epic)
             window.update_pru(pru)
             update_count_ticket()
@@ -225,10 +225,10 @@ def process_position_update(item, my_update_field):
                              'pnl': 'N/A'
                              }
             # MàJ du dico
-            globalvar.dict_openposition[deal_id] = udpate_values
-            # print(globalvar.dict_openposition)
+            globalvar.dict_open_position[deal_id] = udpate_values
+            # print(globalvar.dict_open_position)
             # Envoi le dictionnaire à afficher
-            window.set_open_positions(globalvar.dict_openposition)
+            window.set_open_positions(globalvar.dict_open_position)
             pru = compute_pru(personal.epic)
             window.update_pru(pru)
             update_count_ticket()
@@ -265,8 +265,8 @@ def update_count_ticket():
     size_to_buy = 0
     size_to_sell = 0
     nb_ticket = 0
-    for deal_id in globalvar.dict_openposition:
-        deal = globalvar.dict_openposition.get(deal_id)
+    for deal_id in globalvar.dict_open_position:
+        deal = globalvar.dict_open_position.get(deal_id)
         # on récupère l'epic pour chaque pos
         epic = deal.get('epic')
         # on récupère le sens pour chaque pos
@@ -297,7 +297,7 @@ def process_trade_update(item, my_update_field):
     # Fonction appelé sur reception d'un LS CONFIRMS #_#
     # DEBUG
     # print("--- processTradeUpdate ---")
-    # print("globalvar.dealSizeDelta = ",globalvar.dealSizeDelta)
+    # print("globalvar.deal_size_delta = ",globalvar.deal_size_delta)
     # print("my_update_field ==>>> ",my_update_field)
 
     if my_update_field[0] is not None:
@@ -319,20 +319,20 @@ def process_trade_update(item, my_update_field):
                 aff_deals_id = f.get(u'dealId')
                 aff_status = f.get(u'status')
                 # if (aff_deals_id == dealId and aff_status == u'OPENED' and
-                #             globalvar.dealSizeDelta > 0):
+                #             globalvar.deal_size_delta > 0):
                 #     # Jusqu'à présent dealId et AffDealsId
                 #     # avaient la même référence à l'ouverture.
-                if (aff_status == u'OPENED' and globalvar.dealSizeDelta > 0):
+                if (aff_status == u'OPENED' and globalvar.deal_size_delta > 0):
                 # Modification des conditions d'entrée
-                # si status OPENED et globalvar.dealSizeDelta > 0
+                # si status OPENED et globalvar.deal_size_delta > 0
                     # DEBUG
                     # print("Je sort %s de la position" %
-                    #       globalvar.dealSizeDelta)
+                    #       globalvar.deal_size_delta)
 
                     # UPDATE avec le affected Deal Id
                     body = {"dealId": aff_deals_id,
                             "direction": "SELL",
-                            "size": globalvar.dealSizeDelta,
+                            "size": globalvar.deal_size_delta,
                             "orderType": "MARKET"
                             }
                     # ajustement de la direction dans l'ordre DELETE
@@ -368,7 +368,7 @@ def get_open_positions():
                      proxies=personal.proxies)
     s = json.loads(r.content).get("positions")
     print("--- get_openPositions ---\n    Code %s" % r.status_code)
-    globalvar.dict_openposition = {}  # Ajout 1.14.2
+    globalvar.dict_open_position = {}  # Ajout 1.14.2
     size_to_buy = 0
     size_to_sell = 0
     nb_ticket = 0
@@ -398,7 +398,7 @@ def get_open_positions():
                 nb_ticket += 1
         # Ajout position dans le dictionnaire
         # "dealdId":[epic, size, direction, openLevel, TP, SL]`
-        # globalvar.dict_openposition.update({deal_id:[e,s, d, ol, ll, sl]})
+        # globalvar.dict_open_position.update({deal_id:[e,s, d, ol, ll, sl]})
         # MàJ avec la v2 du dico
         new_deal = {"epic": e,
                     "size": s,
@@ -409,10 +409,10 @@ def get_open_positions():
                     "guaranteedStop": guaranteed_stop,
                     "pnlperlot": 'N/A',
                     "pnl": 'N/A'}
-        globalvar.dict_openposition.update({deal_id: new_deal})
+        globalvar.dict_open_position.update({deal_id: new_deal})
     window.update_pos(nb_ticket, size_to_buy, size_to_sell)
-    # print("Envoi de =>>>>>>>>>> ", globalvar.dict_openposition)
-    window.set_open_positions(globalvar.dict_openposition)  # Ok
+    # print("Envoi de =>>>>>>>>>> ", globalvar.dict_open_position)
+    window.set_open_positions(globalvar.dict_open_position)  # Ok
     pru = compute_pru(personal.epic)
     window.update_pru(pru)
     # print ("---Fin---")
@@ -481,8 +481,8 @@ def compute_pru(epic):
     """
     pru = 0
     size = 0
-    for deal_id in globalvar.dict_openposition:
-        deal = globalvar.dict_openposition.get(deal_id)
+    for deal_id in globalvar.dict_open_position:
+        deal = globalvar.dict_open_position.get(deal_id)
         if deal.get('epic') == epic:
             o = float(deal.get('open_level'))
             s = deal.get('size')

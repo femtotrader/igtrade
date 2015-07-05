@@ -27,14 +27,14 @@ def call_later(func):
 def price_format(price):
     price = float(price)
     # TODO: debug this function please
-    # print("globalvar.scalingFactor", globalvar.scalingFactor, price)
-    if globalvar.scalingFactor == 100:
+    # print("globalvar.scaling_factor", globalvar.scaling_factor, price)
+    if globalvar.scaling_factor == 100:
         # Paire en XXX/JPY
         price = price  # return "3.3f"%(price)
-    elif globalvar.scalingFactor == 10000:
+    elif globalvar.scaling_factor == 10000:
         # Paire en XXX/USD OU XXX/EUR ou XXX/GBP
         price = price  # return "1.5f"%(price)
-    elif globalvar.scalingFactor == 1:
+    elif globalvar.scaling_factor == 1:
         # Indice typiquement
         price = price  # return "5.1f"%(price)
     else:
@@ -88,13 +88,13 @@ class Window(wx.Frame):
                                                 label="Force Open",
                                                 style=wx.TE_LEFT)
         self.is_force_open_box = wx.CheckBox(self.panel, -1, style=wx.TE_RIGHT)
-        self.is_force_open_box.SetValue(globalvar.isForceOpen)
+        self.is_force_open_box.SetValue(globalvar.is_force_open)
         self.is_keyboard_trading_text = wx.StaticText(self.panel, -1,
                                                       label="Keyboard Trading",
                                                       style=wx.TE_LEFT)
         self.is_keyboard_trading_box = wx.CheckBox(self.panel, -1,
                                                    style=wx.TE_RIGHT)
-        self.is_keyboard_trading_box.SetValue(globalvar.isKeyBoardTrading)
+        self.is_keyboard_trading_box.SetValue(globalvar.is_keyboard_trading)
         self.is_guaranteed_stop_trading_text = wx.StaticText(self.panel, -1,
                                                              label=
                                                              "Guaranted Stop",
@@ -102,7 +102,7 @@ class Window(wx.Frame):
         self.is_guaranteed_stop_trading_box = wx.CheckBox(self.panel, -1,
                                                           style=wx.TE_RIGHT)
         self.is_guaranteed_stop_trading_box.SetValue(
-            globalvar.isGuaranteedStopTrading)
+            globalvar.is_guaranteed_stop_trading)
         self.is_auto_stop_to_open_level_text = \
             wx.StaticText(self.panel, -1,
                           label="Auto SL to Open Level",
@@ -110,11 +110,11 @@ class Window(wx.Frame):
         self.is_auto_stop_to_open_level_box = wx.CheckBox(self.panel, -1,
                                                         style=wx.TE_RIGHT)
         self.is_auto_stop_to_open_level_box.SetValue(
-            globalvar.is_AutoStop_to_OpenLevel)
+            globalvar.is_auto_stop_to_open_level)
         self.lot_size_text = wx.StaticText(self.panel, -1, label="Size",
                                            style=wx.TE_CENTRE)
         self.lot_size = wx.TextCtrl(self.panel, -1,
-                                    str(globalvar.requestDealSize),
+                                    str(globalvar.request_deal_size),
                                     size=text_size, style=wx.TE_CENTER)
         label_sl_currency = "SL ("+str(currencyCode)+")"
         self.sl_currency_text = wx.StaticText(self.panel, -1,
@@ -124,17 +124,17 @@ class Window(wx.Frame):
                                                 style=wx.TE_RIGHT)
         self.sl_point_text = wx.StaticText(self.panel, -1, label="SL (point)",
                                            style=wx.TE_RIGHT)
-        self.sl_point = wx.TextCtrl(self.panel, -1, str(globalvar.SLpoint),
+        self.sl_point = wx.TextCtrl(self.panel, -1, str(globalvar.sl_point),
                                     size=text_size, style=wx.TE_CENTER)
         self.tp_point_text = wx.StaticText(self.panel, -1, label="TP (point)",
                                            style=wx.TE_LEFT)
-        self.tp_point = wx.TextCtrl(self.panel, -1, str(globalvar.TPpoint),
+        self.tp_point = wx.TextCtrl(self.panel, -1, str(globalvar.tp_point),
                                     size=text_size, style=wx.TE_CENTER)
         self.sl_currency = wx.TextCtrl(self.panel, -1,
-                                       str(globalvar.SLcurrency),
+                                       str(globalvar.sl_currency),
                                        size=text_size, style=wx.TE_CENTER)
         self.sl_percentage = wx.TextCtrl(self.panel, -1,
-                                         str(globalvar.SLpercentage),
+                                         str(globalvar.sl_percentage),
                                          size=text_size, style=wx.TE_CENTER)
         self.nb_pos = wx.StaticText(self.panel, -1,
                                     label="Amount of Position(s) : ")
@@ -289,26 +289,26 @@ class Window(wx.Frame):
 
     @call_later
     def update_force_open(self, item):
-        globalvar.isForceOpen = self.is_force_open_box.GetValue()
-        if not globalvar.isForceOpen:
-            globalvar.SLpoint = ''
-            globalvar.TPpoint = ''
-            globalvar.SLcurrency = ''
-            globalvar.SLpercentage = ''
-            self.sl_point.SetValue(str(globalvar.SLpoint))
-            self.tp_point.SetValue(str(globalvar.TPpoint))
-            self.sl_currency.SetValue(str(globalvar.SLcurrency))
-            self.sl_percentage.SetValue(str(globalvar.SLpercentage))
+        globalvar.is_force_open = self.is_force_open_box.GetValue()
+        if not globalvar.is_force_open:
+            globalvar.sl_point = ''
+            globalvar.tp_point = ''
+            globalvar.sl_currency = ''
+            globalvar.sl_percentage = ''
+            self.sl_point.SetValue(str(globalvar.sl_point))
+            self.tp_point.SetValue(str(globalvar.tp_point))
+            self.sl_currency.SetValue(str(globalvar.sl_currency))
+            self.sl_percentage.SetValue(str(globalvar.sl_percentage))
         # print("--- Fonction update_foreceopen : "
-        #       "globalvar.isForceOpen/SLpoint/TPpoint/SLcurrency/"
+        #       "globalvar.is_force_open/sl_point/tp_point/sl_currency/"
         #       "sl_percentage",
-        #       globalvar.isForceOpen, globalvar.SLpoint, globalvar.TPpoint,
-        #       globalvar.SLcurrency,globalvar.SLpercentage)
+        #       globalvar.is_force_open, globalvar.sl_point, globalvar.tp_point,
+        #       globalvar.sl_currency,globalvar.sl_percentage)
 
     def update_keyboard_trading(self, item):
-        globalvar.isKeyBoardTrading = self.is_keyboard_trading_box.GetValue()
+        globalvar.is_keyboard_trading = self.is_keyboard_trading_box.GetValue()
         # print("--- Fonction update_keyboardtrading : ",
-        #       globalvar.isKeyBoardTrading)
+        #       globalvar.is_keyboard_trading)
     
     def update_guaranteed_stop_trading(self, item):
         print(" Fonction update_guaranteedStopTrading ",
@@ -328,37 +328,37 @@ class Window(wx.Frame):
                           float(self.sl_point.GetValue()))
                 
                 print("value", value)
-                # print("globalvar.minControlledRiskStopDistance",
-                #       globalvar.minControlledRiskStopDistance)
+                # print("globalvar.min_controlled_risk_stop_distance",
+                #       globalvar.min_controlled_risk_stop_distance)
                 
-                if value < float(globalvar.minControlledRiskStopDistance):
+                if value < float(globalvar.min_controlled_risk_stop_distance):
                     # print("GuaranteedStopTrading is forced to "
-                    #       "minControlledRiskStopDistance: ", value,
-                    #       globalvar.minControlledRiskStopDistance, value)
-                    self.sl_point.SetValue(str(globalvar.minControlledRiskStopDistance))
+                    #       "min_controlled_risk_stop_distance: ", value,
+                    #       globalvar.min_controlled_risk_stop_distance, value)
+                    self.sl_point.SetValue(str(globalvar.min_controlled_risk_stop_distance))
                 #else:
                     # print("GuaranteedStopTrading is upper or equal "
                     #       "to sl_point.GetValue()", value,
-                    #       globalvar.minControlledRiskStopDistance)
+                    #       globalvar.min_controlled_risk_stop_distance)
 
             else:
                 # print("GuaranteedStopTrading, but SL was empty and is now "
-                #       "forced to minControlledRiskStopDistance: ",
-                #       globalvar.minControlledRiskStopDistance)
+                #       "forced to min_controlled_risk_stop_distance: ",
+                #       globalvar.min_controlled_risk_stop_distance)
                 self.sl_point.SetValue(
-                    str(globalvar.minControlledRiskStopDistance))
+                    str(globalvar.min_controlled_risk_stop_distance))
 
         else:
             print("GuaranteedStop_Trading_box True => False",
                   self.is_guaranteed_stop_trading_box.GetValue())
-        globalvar.isGuaranteedStopTrading = \
+        globalvar.is_guaranteed_stop_trading = \
             self.is_guaranteed_stop_trading_box.GetValue()
     
     def update_auto_stop_to_open_level(self, item):
-        globalvar.is_AutoStop_to_OpenLevel = \
+        globalvar.is_auto_stop_to_open_level = \
             self.is_auto_stop_to_open_level_box.GetValue()
         print("--- Fonction update_AutoStop_to_OpenLevel : ",
-              globalvar.is_AutoStop_to_OpenLevel)
+              globalvar.is_auto_stop_to_open_level)
             
     @call_later
     def update_size_lot(self, item):
@@ -366,14 +366,14 @@ class Window(wx.Frame):
         if value != '':
             try:
                 # Arrondi de la valeur rentrée à deux decimal
-                globalvar.requestDealSize = round(float(value), 2)
+                globalvar.request_deal_size = round(float(value), 2)
             except ValueError:
-                globalvar.requestDealSize = ''
-                self.lot_size.SetValue(globalvar.requestDealSize)
+                globalvar.request_deal_size = ''
+                self.lot_size.SetValue(globalvar.request_deal_size)
         else:
-            globalvar.requestDealSize = value
+            globalvar.request_deal_size = value
             # print("Fonction update_sizelot : ",
-            #       globalvar.requestDealSize)  # Ok
+            #       globalvar.request_deal_size)  # Ok
 
     @call_later
     def update_sl_point(self, item):
@@ -381,91 +381,91 @@ class Window(wx.Frame):
         if value != '':
             try:
                 # Arrondi de la valeur rentrée à une decimale
-                globalvar.SLpoint = round(float(value), 1)
+                globalvar.sl_point = round(float(value), 1)
                 # MaJ du Force Open
-                globalvar.isForceOpen = True
-                self.is_force_open_box.SetValue(globalvar.isForceOpen)
+                globalvar.is_force_open = True
+                self.is_force_open_box.SetValue(globalvar.is_force_open)
                                  
             except ValueError:
-                globalvar.SLpoint = ''
-                self.sl_point.SetValue(globalvar.SLpoint)
-                print("SLpoint Error")
+                globalvar.sl_point = ''
+                self.sl_point.SetValue(globalvar.sl_point)
+                print("sl_point Error")
     
-            if globalvar.isGuaranteedStopTrading and globalvar.SLpoint < \
-                    float(globalvar.minControlledRiskStopDistance):
-                print("isGuaranteedStopTrading is set to True, "
-                      "so SL point forced to minControlledRiskStopDistance",
-                      globalvar.minControlledRiskStopDistance)
-                globalvar.SLpoint = globalvar.minControlledRiskStopDistance
-                self.sl_point.SetValue(str(globalvar.SLpoint))
+            if globalvar.is_guaranteed_stop_trading and globalvar.sl_point < \
+                    float(globalvar.min_controlled_risk_stop_distance):
+                print("is_guaranteed_stop_trading is set to True, "
+                      "so SL point forced to min_controlled_risk_stop_distance",
+                      globalvar.min_controlled_risk_stop_distance)
+                globalvar.sl_point = globalvar.min_controlled_risk_stop_distance
+                self.sl_point.SetValue(str(globalvar.sl_point))
 
             # Calcul de la taille des lots si les champs les champs SL_ccy ET
             # SL_% sont rempli avant.
-            if (globalvar.SLcurrency != '') & (globalvar.SLpercentage == ''):
+            if (globalvar.sl_currency != '') & (globalvar.sl_percentage == ''):
                 # calcul du nombre de position avec la formule :
-                # (SLcurrency)/(SLpoint + spread)/valpoint = nb de lots
+                # (sl_currency)/(sl_point + spread)/valpoint = nb de lots
                 try:
-                    deal_size = globalvar.SLcurrency / \
-                                (globalvar.SLpoint + globalvar.spread) / \
-                                globalvar.valueOfOnePip
-                    globalvar.requestDealSize = round(deal_size, 2)
+                    deal_size = globalvar.sl_currency / \
+                                (globalvar.sl_point + globalvar.spread) / \
+                                globalvar.value_of_one_pip
+                    globalvar.request_deal_size = round(deal_size, 2)
                     # MàJ du champ dans la taille du lot
-                    self.lot_size.SetValue(str(globalvar.requestDealSize))
+                    self.lot_size.SetValue(str(globalvar.request_deal_size))
                 except ValueError:
-                    globalvar.requestDealSize = ''
-                    print("SLpoint -> SLcurrency : Error")
-            elif (globalvar.SLcurrency == '') & (globalvar.SLpercentage != ''):
+                    globalvar.request_deal_size = ''
+                    print("sl_point -> sl_currency : Error")
+            elif (globalvar.sl_currency == '') & (globalvar.sl_percentage != ''):
                 try:
                     # Calcul du nombre de position avec la forumule :
                     # [(balance + deposit) * SL_% / 100]
-                    # / (SLpoint + globalvar.spread)/valpoint
+                    # / (sl_point + globalvar.spread)/valpoint
                     deal_size = (((float(globalvar.balance)
                                    + float(globalvar.deposit))
-                                  * globalvar.SLpercentage / 100) /
-                                 (globalvar.SLpoint + globalvar.spread) /
-                                 globalvar.valueOfOnePip)
-                    globalvar.requestDealSize = round(deal_size, 2)
+                                  * globalvar.sl_percentage / 100) /
+                                 (globalvar.sl_point + globalvar.spread) /
+                                 globalvar.value_of_one_pip)
+                    globalvar.request_deal_size = round(deal_size, 2)
                     # MaJ du champ dans la GUI
-                    self.lot_size.SetValue(str(globalvar.requestDealSize))
+                    self.lot_size.SetValue(str(globalvar.request_deal_size))
                 except ValueError:
-                    globalvar.requestDealSize = ''
-                    print("SLpoint -> SLpercentage : Error")
+                    globalvar.request_deal_size = ''
+                    print("sl_point -> sl_percentage : Error")
         else:
-            globalvar.SLpoint = value
+            globalvar.sl_point = value
 
-            # Mise a False  isGuaranteedStopTrading si SL est vide
-            globalvar.isGuaranteedStopTrading = False
+            # Mise a False  is_guaranteed_stop_trading si SL est vide
+            globalvar.is_guaranteed_stop_trading = False
             self.is_guaranteed_stop_trading_box.SetValue(
-                globalvar.isGuaranteedStopTrading)
+                globalvar.is_guaranteed_stop_trading)
             
-            # Mise a False isForceOpen si TP & SL sont vide
-            if globalvar.TPpoint == '':
-                globalvar.isForceOpen = False
-                self.is_force_open_box.SetValue(globalvar.isForceOpen)
+            # Mise a False is_force_open si TP & SL sont vide
+            if globalvar.tp_point == '':
+                globalvar.is_force_open = False
+                self.is_force_open_box.SetValue(globalvar.is_force_open)
     
     
-        # print("--- Fonction globalvar.SLpoint : "
-        #       "globalvar.SLpoint/TPpoint/SLcurrency", globalvar.SLpoint,
-        #       globalvar.TPpoint, globalvar.SLcurrency)
+        # print("--- Fonction globalvar.sl_point : "
+        #       "globalvar.sl_point/tp_point/sl_currency", globalvar.sl_point,
+        #       globalvar.tp_point, globalvar.sl_currency)
     
     @call_later
     def update_tp_point(self, item):
         value = self.tp_point.GetValue().replace(",", ".")
         if value != '':
             try:
-                globalvar.TPpoint = round(float(value), 1)
-                globalvar.isForceOpen = True
-                self.is_force_open_box.SetValue(globalvar.isForceOpen)
+                globalvar.tp_point = round(float(value), 1)
+                globalvar.is_force_open = True
+                self.is_force_open_box.SetValue(globalvar.is_force_open)
             except ValueError:
-                globalvar.TPpoint = ''
-                self.tp_point.SetValue(globalvar.TPpoint)
-                print("TPpoint Error")
+                globalvar.tp_point = ''
+                self.tp_point.SetValue(globalvar.tp_point)
+                print("tp_point Error")
         else:
-            globalvar.TPpoint = value
-            if globalvar.SLpoint == '':
-                globalvar.isForceOpen = False
-                self.is_force_open_box.SetValue(globalvar.isForceOpen)
-        # print("Fonction globalvar.TPpoint : ", globalvar.TPpoint)
+            globalvar.tp_point = value
+            if globalvar.sl_point == '':
+                globalvar.is_force_open = False
+                self.is_force_open_box.SetValue(globalvar.is_force_open)
+        # print("Fonction globalvar.tp_point : ", globalvar.tp_point)
 
     @call_later
     def update_SL_ccy_percentage(self, item):
@@ -473,54 +473,54 @@ class Window(wx.Frame):
         value_percentage = self.sl_percentage.GetValue().replace(",", ".")
         if value_currency != '' and value_percentage != '':
         # Les deux champs SL_CCY et SL_% sont rempli
-            globalvar.SLcurrency = ''
-            self.sl_currency.SetValue(globalvar.SLcurrency)
-            globalvar.SLpercentage = ''
-            self.sl_percentage.SetValue(globalvar.SLpercentage)
+            globalvar.sl_currency = ''
+            self.sl_currency.SetValue(globalvar.sl_currency)
+            globalvar.sl_percentage = ''
+            self.sl_percentage.SetValue(globalvar.sl_percentage)
             # Mise à zéro des deux champs pour exclusion mutuelle
         elif value_currency != '' and value_percentage == '':
         # SL_ccy est rempli // SL_% est vide
-            globalvar.SLpercentage = ''
+            globalvar.sl_percentage = ''
             # Là je remet une partie du code de la fonction sl_currency
             try:
-                globalvar.SLcurrency = round(float(value_currency), 2)
+                globalvar.sl_currency = round(float(value_currency), 2)
                 # Récuperation et arrondi de la valeur à 2 décimales
-                if globalvar.SLpoint != '':
+                if globalvar.sl_point != '':
                     # calcul du nombre de position avec la formule :
-                    # (SLcurrency)/(SLpoint + globalvar.spread)/valpoint
-                    deal_size = (globalvar.SLcurrency /
-                                 (globalvar.SLpoint + globalvar.spread) /
-                                 globalvar.valueOfOnePip)
-                    globalvar.requestDealSize = round(deal_size, 2)
+                    # (sl_currency)/(sl_point + globalvar.spread)/valpoint
+                    deal_size = (globalvar.sl_currency /
+                                 (globalvar.sl_point + globalvar.spread) /
+                                 globalvar.value_of_one_pip)
+                    globalvar.request_deal_size = round(deal_size, 2)
                     # MaJ du champ dans la GUI
-                    self.lot_size.SetValue(str(globalvar.requestDealSize))
+                    self.lot_size.SetValue(str(globalvar.request_deal_size))
             except ValueError:
-                globalvar.SLcurrency = ''
-                self.sl_currency.SetValue(globalvar.SLcurrency)
+                globalvar.sl_currency = ''
+                self.sl_currency.SetValue(globalvar.sl_currency)
         elif value_currency == '' and value_percentage != '':
         # SL_ccy est vide // SL_% est rempli
-            globalvar.SLcurrency = ''
+            globalvar.sl_currency = ''
             try:
-                globalvar.SLpercentage = round(float(value_percentage), 2)
+                globalvar.sl_percentage = round(float(value_percentage), 2)
                 # Récuperation et arrondi de la valeur à 2 décimales
-                if globalvar.SLpoint != '':
+                if globalvar.sl_point != '':
                     # Calcul du nombre de position avec la forumule :
-                    # [(balance + deposit) * SL_% / 100]/(SLpoint + globalvar.spread)/valpoint
+                    # [(balance + deposit) * SL_% / 100]/(sl_point + globalvar.spread)/valpoint
                     deal_size = (((float(globalvar.balance)
                                     + float(globalvar.deposit))
-                                   * globalvar.SLpercentage / 100) /
-                                 (globalvar.SLpoint + globalvar.spread) /
-                                 globalvar.valueOfOnePip)
-                    globalvar.requestDealSize = round(deal_size, 2)
+                                   * globalvar.sl_percentage / 100) /
+                                 (globalvar.sl_point + globalvar.spread) /
+                                 globalvar.value_of_one_pip)
+                    globalvar.request_deal_size = round(deal_size, 2)
                     # MaJ du champ dans la GUI
-                    self.lot_size.SetValue(str(globalvar.requestDealSize))
+                    self.lot_size.SetValue(str(globalvar.request_deal_size))
             except ValueError:
-                globalvar.SLpercentage = ''
-                self.sl_percentage.SetValue(globalvar.SLpercentage)
-        # print(" globalvar.SLpercentage = %s / globalvar.SLcurrency = %s"
-        #       " / globalvar.requestDealSize = %s" %
-        #       (globalvar.SLpercentage, globalvar.SLcurrency,
-        #        globalvar.requestDealSize))
+                globalvar.sl_percentage = ''
+                self.sl_percentage.SetValue(globalvar.sl_percentage)
+        # print(" globalvar.sl_percentage = %s / globalvar.sl_currency = %s"
+        #       " / globalvar.request_deal_size = %s" %
+        #       (globalvar.sl_percentage, globalvar.sl_currency,
+        #        globalvar.request_deal_size))
         # DEBUG de ce qui est "seté" par la fonction
             
      
@@ -533,19 +533,19 @@ class Window(wx.Frame):
         self.sell_button.SetLabel(ask)
         self.statusbar.SetStatusText("last updated: " +
                                      time.strftime("%H:%M:%S"))
-        spread_float = float((float(bid)-float(ask)) * globalvar.scalingFactor)
+        spread_float = float((float(bid)-float(ask)) * globalvar.scaling_factor)
         globalvar.spread = round(spread_float, 1)
         self.spread_text.SetLabel("Spread : %s - StopMin : %s"
                                   " - StopMinGuaranted : %s" %
                                   (globalvar.spread,
-                                   globalvar.minNormalStoporLimitDistance,
-                                   globalvar.minControlledRiskStopDistance))
+                                   globalvar.min_normal_stop_or_limit_distance,
+                                   globalvar.min_controlled_risk_stop_distance))
 
         # màj de la liste des pos
-        for item, deal_id in enumerate(globalvar.dict_openposition):
+        for item, deal_id in enumerate(globalvar.dict_open_position):
             # print("item, dealId", item, dealId)
             try:
-                deal = globalvar.dict_openposition.get(deal_id)
+                deal = globalvar.dict_open_position.get(deal_id)
                 point_profit_per_lot = deal.get('pnlperlot')
                 point_profit = deal.get('pnl')
                 # Ajout/MàJ du solde en point par ligne dans le tableau
@@ -670,9 +670,9 @@ class Window(wx.Frame):
         id_deal_to_delete = str(self.open_positions_list.GetItemText(
             self.open_positions_list.GetFirstSelected()))
 
-        deal_to_delete = globalvar.dict_openposition.get(id_deal_to_delete)
+        deal_to_delete = globalvar.dict_open_position.get(id_deal_to_delete)
         direction = deal_to_delete.get('direction')
-        size = globalvar.dict_openposition.get(id_deal_to_delete).get('size')
+        size = globalvar.dict_open_position.get(id_deal_to_delete).get('size')
         # print ("DealId a supprimer ", id_deal_to_delete, direction , size)
         # Appel du events-> delete
         events.delete(id_deal_to_delete, direction, size)
@@ -720,21 +720,21 @@ if __name__ == "__main__":
 
     # Def variables pour le lancement de l'interface GUI seule
     # Valeur en monnaie d'un pip
-    globalvar.valueOfOnePip = 5
+    globalvar.value_of_one_pip = 5
     # Valeur du facteur d'échelle
-    globalvar.scalingFactor = 1.0
+    globalvar.scaling_factor = 1.0
     # Valeur du spread
     globalvar.spread = 1.0
     # Distance en point/pips du Stop-Normal � l'ouverture
-    globalvar.minNormalStoporLimitDistance = 6.0
+    globalvar.min_normal_stop_or_limit_distance = 6.0
     # Distance en point/pips du Stop-Garantie � l'ouverture
-    globalvar.minControlledRiskStopDistance = 20.0
+    globalvar.min_controlled_risk_stop_distance = 20.0
 
     globalvar.balance = 10000.0
     globalvar.deposit = 340.0 
 
     # Dictionnaire avec des positions fictives
-    globalvar.dict_openposition = {
+    globalvar.dict_open_position = {
         "DDDAAAZZZ": {'epic': "miniDAX30(5E)", 'size': "10.5",
                       'direction': "Buy", 'open_level': "11997.4",
                       "limit_level": None, "stop_level": "11977.4",
@@ -777,6 +777,6 @@ if __name__ == "__main__":
     window.update_pnl_daily(150, 30, 15, 2)
 
     # Remplissage de la liste des positions ouvertes
-    window.set_open_positions(globalvar.dict_openposition)
+    window.set_open_positions(globalvar.dict_open_position)
     
     app.MainLoop()

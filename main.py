@@ -41,26 +41,26 @@ import globalvar
 
 
 def buy(event):
-    order(event, "BUY", globalvar.requestDealSize, globalvar.isForceOpen,
-          globalvar.SLpoint, globalvar.TPpoint,
-          globalvar.isGuaranteedStopTrading)
+    order(event, "BUY", globalvar.request_deal_size, globalvar.is_force_open,
+          globalvar.sl_point, globalvar.tp_point,
+          globalvar.is_guaranteed_stop_trading)
 
 
 def sell(event):
-    order(event, "SELL", globalvar.requestDealSize, globalvar.isForceOpen,
-          globalvar.SLpoint, globalvar.TPpoint,
-          globalvar.isGuaranteedStopTrading)
+    order(event, "SELL", globalvar.request_deal_size, globalvar.is_force_open,
+          globalvar.sl_point, globalvar.tp_point,
+          globalvar.is_guaranteed_stop_trading)
 
 
 def order(event, direction, req_deal_size, is_force_open,
           SLpoint, TPpoint, isStopGuaranteed):
     expiry = '-'
-    if req_deal_size < globalvar.minDealSize:
-        globalvar.dealSizeDelta = globalvar.minDealSize - req_deal_size
-        req_deal_size = globalvar.minDealSize
+    if req_deal_size < globalvar.min_deal_size:
+        globalvar.deal_size_delta = globalvar.min_deal_size - req_deal_size
+        req_deal_size = globalvar.min_deal_size
     else:
-        globalvar.dealSizeDelta = 0
-    body = {"currencyCode": globalvar.currencyCode, "epic": personal.epic,
+        globalvar.deal_size_delta = 0
+    body = {"currencyCode": globalvar.currency_code, "epic": personal.epic,
             "expiry": expiry, "direction": direction, "size": req_deal_size,
             "forceOpen": is_force_open, "orderType": "MARKET",
             "limitDistance": TPpoint, "stopDistance": SLpoint,
@@ -129,21 +129,21 @@ def polling_markets_details(period=60):
     :return:
     """
     while True:
-        (globalvar.minDealSize, globalvar.currencyCode, globalvar.valueOfOnePip,
-         globalvar.scalingFactor, globalvar.minNormalStoporLimitDistance,
-         globalvar.minControlledRiskStopDistance) = get_markets_details()
+        (globalvar.min_deal_size, globalvar.currency_code, globalvar.value_of_one_pip,
+         globalvar.scaling_factor, globalvar.min_normal_stop_or_limit_distance,
+         globalvar.min_controlled_risk_stop_distance) = get_markets_details()
         # DEBUG START
-        # globalvar.minNormalStoporLimitDistance += random.randint(1,10)
+        # globalvar.min_normal_stop_or_limit_distance += random.randint(1,10)
         # print("pollingMarketsDetails %ssecondes %s - minStopNormal=%s - "
         #       "minStopG=%s" % (period, datetime.datetime.now(),
-        #                        globalvar.minNormalStoporLimitDistance,
-        #                        globalvar.minControlledRiskStopDistance))
+        #                        globalvar.min_normal_stop_or_limit_distance,
+        #                        globalvar.min_controlled_risk_stop_distance))
         # DEBUG END
         time.sleep(period)
 
 
 def get_markets_details():
-    """Ajout falex pour récuperation du minDealSize de l'epic choisi
+    """Ajout falex pour récuperation du min_deal_size de l'epic choisi
 
     :return:
     """
@@ -187,7 +187,7 @@ def get_markets_details():
     # print(csd)
     if nsd.get(u'unit') == u'POINTS':
         min_controlled_risk_stop_distance = csd.get(u'value')
-        # print("minControlledRiskStopDistance %s" %
+        # print("min_controlled_risk_stop_distance %s" %
         #       min_controlled_risk_stop_distance)
          
     s = j.get(u'snapshot')  # Sous-partie snapshot
@@ -216,28 +216,28 @@ def get_daily_prices():
 def on_key_press(event):
     # print(" Fonction Main OnKeyPress ")
     code = event.GetKeyCode()
-    if globalvar.isKeyBoardTrading:
+    if globalvar.is_keyboard_trading:
         # if code == wx.WXK_UP:
         #     print("Up")
         #     events.get_openPositions()
         if code == wx.WXK_CONTROL:
             print("Ctrl/Cmd")
-            last_pos_id = globalvar.dict_openposition.keys()[-1]
-            last_pos = globalvar.dict_openposition.get(last_pos_id)
+            last_pos_id = globalvar.dict_open_position.keys()[-1]
+            last_pos = globalvar.dict_open_position.get(last_pos_id)
             direction = last_pos.get('direction')
-            size = globalvar.dict_openposition.get(last_pos_id).get('size')
+            size = globalvar.dict_open_position.get(last_pos_id).get('size')
             # Appel du events-> delete
             events.delete(last_pos_id, direction, size)
         if code == wx.WXK_LEFT:
             print("Left")
-            order(event, "SELL", globalvar.requestDealSize,
-                  globalvar.isForceOpen, globalvar.SLpoint, globalvar.TPpoint,
-                  globalvar.isGuaranteedStopTrading)
+            order(event, "SELL", globalvar.request_deal_size,
+                  globalvar.is_force_open, globalvar.sl_point, globalvar.tp_point,
+                  globalvar.is_guaranteed_stop_trading)
         if code == wx.WXK_RIGHT:
             print("Right")
-            order(event, "BUY", globalvar.requestDealSize,
-                  globalvar.isForceOpen, globalvar.SLpoint, globalvar.TPpoint,
-                  globalvar.isGuaranteedStopTrading)
+            order(event, "BUY", globalvar.request_deal_size,
+                  globalvar.is_force_open, globalvar.sl_point, globalvar.tp_point,
+                  globalvar.is_guaranteed_stop_trading)
         if code == wx.WXK_DOWN:
             print("Down")
             # Appel de la fonction pour fermer tous les ordres ouverts
@@ -259,7 +259,7 @@ def close_all_button(event):
 
 def close_all():
     # print ("--- Fonction CloseAll ---")
-    for deal_id_to_delete, v in globalvar.dict_openposition.items():
+    for deal_id_to_delete, v in globalvar.dict_open_position.items():
         direction = v.get('direction')
         size = v.get('size')
         # Appel du events-> delete
@@ -269,7 +269,7 @@ def close_all():
 
 def close_all_epic_button(event):
     # print ("--- Fonction Close All epic ---")
-    for deal_id_to_delete, v in globalvar.dict_openposition.items():
+    for deal_id_to_delete, v in globalvar.dict_open_position.items():
         if v.get('epic') == personal.epic:
             direction = v.get('direction')
             size = v.get('size')
@@ -280,8 +280,8 @@ def close_all_epic_button(event):
 
 def sl_to_zero(event):
     # print("SL to 0 ", personal.epic)
-    for deal_id in globalvar.dict_openposition:
-        deal = globalvar.dict_openposition.get(deal_id)
+    for deal_id in globalvar.dict_open_position:
+        deal = globalvar.dict_open_position.get(deal_id)
         if deal.get('epic') == personal.epic:
             o = float(deal.get('open_level'))
             tp = deal.get('limit_level')
@@ -290,20 +290,20 @@ def sl_to_zero(event):
 
 def sl_to_zero_spread(event):
     # print("SL to 0 - spread ", personal.epic)
-    for deal_id in globalvar.dict_openposition:
-        deal = globalvar.dict_openposition.get(deal_id)
+    for deal_id in globalvar.dict_open_position:
+        deal = globalvar.dict_open_position.get(deal_id)
         if deal.get('epic') == personal.epic:
             o = float(deal.get('open_level'))
-            o = o - (globalvar.spread/globalvar.scalingFactor)
+            o = o - (globalvar.spread/globalvar.scaling_factor)
             tp = deal.get('limit_level')
             events.update_limit(deal_id, o, tp)
 
 
 def tp_to_zero(event):
     # print("TP to 0 - ", personal.epic)
-    # print("globalvar.dict_openposition", globalvar.dict_openposition)
-    for deal_id in globalvar.dict_openposition:
-        deal = globalvar.dict_openposition.get(deal_id)
+    # print("globalvar.dict_open_position", globalvar.dict_open_position)
+    for deal_id in globalvar.dict_open_position:
+        deal = globalvar.dict_open_position.get(deal_id)
         if deal.get('epic') == personal.epic:
             o = float(deal.get('open_level'))
             sl = deal.get('stop_level')
@@ -314,8 +314,8 @@ def sl_to_pru(event):
     # print("SL to PRU ", personal.epic)
     pru = events.compute_pru(personal.epic)
     # print("PRU = %s" % pru)
-    for deal_id in globalvar.dict_openposition:
-        deal = globalvar.dict_openposition.get(deal_id)
+    for deal_id in globalvar.dict_open_position:
+        deal = globalvar.dict_open_position.get(deal_id)
         if deal.get('epic') == personal.epic:
             tp = deal.get('limit_level')
             events.update_limit(deal_id, pru, tp)
@@ -325,8 +325,8 @@ def SLtoPRU(event):
     # print("SL to PRU ", personal.epic)
     pru = events.compute_pru(personal.epic)
     # print("PRU = %s" % pru)
-    for deal_id in globalvar.dict_openposition:
-        deal = globalvar.dict_openposition.get(deal_id)
+    for deal_id in globalvar.dict_open_position:
+        deal = globalvar.dict_open_position.get(deal_id)
         if deal.get('epic') == personal.epic:
             tp = deal.get('limit_level')
             events.update_limit(deal_id, pru, tp)
@@ -491,18 +491,18 @@ def main(event):
         pivots = calculate_pivots()  # Calcul les PP en Daily/formule classique
 
         # Récupére la taille min d'ouverture d'un ticket et la monnaie d'échange
-        (globalvar.minDealSize, globalvar.currencyCode,
-         globalvar.valueOfOnePip, globalvar.scalingFactor,
-         globalvar.minNormalStoporLimitDistance,
-         globalvar.minControlledRiskStopDistance) = get_markets_details()
+        (globalvar.min_deal_size, globalvar.currency_code,
+         globalvar.value_of_one_pip, globalvar.scaling_factor,
+         globalvar.min_normal_stop_or_limit_distance,
+         globalvar.min_controlled_risk_stop_distance) = get_markets_details()
 
         # DEBUG
         # print("Main retour fonction getMarketsDetails ==>>\n    ",
-        #       globalvar.minDealSize, globalvar.currencyCode,
-        #       globalvar.valueOfOnePip, globalvar.scalingFactor,
-        #       globalvar.minNormalStoporLimitDistance,
-        #       globalvar.minControlledRiskStopDistance)
-        # globalvar.currencyCode = EUR, AUD, USD, GBP, ...
+        #       globalvar.min_deal_size, globalvar.currency_code,
+        #       globalvar.value_of_one_pip, globalvar.scaling_factor,
+        #       globalvar.min_normal_stop_or_limit_distance,
+        #       globalvar.min_controlled_risk_stop_distance)
+        # globalvar.currency_code = EUR, AUD, USD, GBP, ...
         width = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X)
         height = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y)
         WIN_SIZE = (width/2.6, height/1.3)
@@ -512,7 +512,7 @@ def main(event):
                                  title='L3 scalping - ' + globalvar.version +
                                        ' - ' + account_id + " - " + account_name +
                                        " - " + epic_shortname,
-                                 currencyCode=globalvar.currencyCode,
+                                 currencyCode=globalvar.currency_code,
                                  size=WIN_SIZE)
         window.buy_button.Bind(wx.EVT_BUTTON, buy)
         window.sell_button.Bind(wx.EVT_BUTTON, sell)

@@ -6,21 +6,26 @@ import collections
 version = "1.17"
 
 # Variables Instrument
-minDealSize = None  # Affectation de la valeur à la connexion
-currencyCode = None  # Monnaie utilise par l'epic
-valueOfOnePip = None  # Valeur en monnaie d'un pip
-scalingFactor = None  # Valeur du facteur d'échelle
-spread = None  # Valeur du spread
+# Affectation de la valeur à la connexion
+min_deal_size = None
+# Monnaie utilise par l'epic
+currency_code = None
+# Valeur en monnaie d'un pip
+value_of_one_pip = None
+# Valeur du facteur d'échelle
+scaling_factor = None
+# Valeur du spread
+spread = None
 # Distance en point/pips du Stop-Normal à l'ouverture
-minNormalStoporLimitDistance = None
+min_normal_stop_or_limit_distance = None
 # Distance en point/pips du Stop-Garantie à l'ouverture
-minControlledRiskStopDistance = None
+min_controlled_risk_stop_distance = None
 
 ########################################
 # V1 du dictionnaire de position ouverte
 # Dictionnaire avec la référence du dealID comme "Key"
 # et value une liste avec les éléments[epic, size, direction, level, TP, SL]
-# dict_openposition = collections.OrderedDict()
+# dict_open_position = collections.OrderedDict()
 ########################################
 # V2 du dictionnaire de position ouverte
 # Sous la forme {"dealId": {"epic": '',
@@ -32,29 +37,29 @@ minControlledRiskStopDistance = None
 #                           "pnl": ''},
 #                 "dealId": { ... }
 #                 }
-dict_openposition = collections.OrderedDict()
+dict_open_position = collections.OrderedDict()
 
 # List pour ordonner les key des postions
 list_key = ["epic", "size", "direction", "open_level", "limit_level",
             "stop_level", "guaranteedStop", "pnlperlot", "pnl"]
 
 # Variable "Ticket"
-requestDealSize = 1
-dealSizeDelta = 0  # Init a 0
-isForceOpen = True
-SLpoint = ''
-TPpoint = ''
-SLcurrency = ''
-SLpercentage = ''
+request_deal_size = 1
+deal_size_delta = 0  # Init a 0
+is_force_open = True
+sl_point = ''
+tp_point = ''
+sl_currency = ''
+sl_percentage = ''
 
 # Variable Programme
-isGuaranteedStopTrading = False
+is_guaranteed_stop_trading = False
 
 # Positionne a false pour forcer l'utilisateur a cliquer sur la case
 # pour ne pas passer des trades
-isKeyBoardTrading = False
+is_keyboard_trading = False
 
-is_AutoStop_to_OpenLevel = False
+is_auto_stop_to_open_level = False
 
 
 # Variable account
