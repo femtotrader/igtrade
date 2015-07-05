@@ -1,10 +1,15 @@
 # -*- coding:utf-8 -*-
 
-# Version 1.16 falex du 2015 06 01
-# Sur base 1.15.1 falex/guilux/beni du 2015 06 01
+# Version 1.17 splanquart/yopi/falex du 2015 06 29
+# Sur base 1.16
 
 # Ajouts fonctionnels / modifications / corrections :
-# - Ajout d'un polling toutes les 60 de la valeur des Stops (Normal et Garantie) à l'ouverture
+# - Mise au norme PEP08 du code par Splanquart
+# - Intégration du code de Yopi : Ajout d'un SL en % du capital
+# - Ajout d'un calcul du nombre de point pour un lot (en plus du point X lots)
+# - Renommage de tête de colonne dans la liste des positions ouvertes
+# - Ajout d'une fonction de mise à Slà0 automatique
+# - Ajout des epic demandés dans le forum (au 29/06/2015)
 
 # L3 Scalping
 # Import Librairies système
@@ -287,7 +292,6 @@ def TPto0(event):
             sl = globalvar.dict_openposition.get(dealId).get('stop_level')
             events.updateLimit(dealId, sl, o)
 
-
 def SLtoPRU(event):
     # print("SL to PRU ", personal.epic)
     pru = events.PRU(personal.epic)
@@ -297,6 +301,14 @@ def SLtoPRU(event):
             tp = globalvar.dict_openposition.get(dealId).get('limit_level')
             events.updateLimit(dealId, pru, tp)
 
+def SLtoPRU(event):
+    # print("SL to PRU ", personal.epic)
+    pru = events.PRU(personal.epic)
+    # print("PRU = %s" % pru)
+    for dealId in globalvar.dict_openposition:
+        if globalvar.dict_openposition.get(dealId).get('epic') == personal.epic:
+            tp = globalvar.dict_openposition.get(dealId).get('limit_level')
+            events.updateLimit(dealId, pru, tp)
 
 def main(event):
     loging_window.on_close()
@@ -471,9 +483,8 @@ def main(event):
         # globalvar.currencyCode = EUR, AUD, USD, GBP, ...
         width = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X)
         height = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y)
-        WIN_SIZE = (width/4, height/1.3)
+        WIN_SIZE = (width/2.6, height/1.3)
 
-        # gui.epic_choices[gui.epic.GetCurrentSelection()])
         epic_shortname = globalvar.epic_to_shortname_dict.get(personal.epic)
         window = gui_main.Window(None, pivots=pivots,
                                  title='L3 scalping - ' + globalvar.version +
@@ -481,15 +492,13 @@ def main(event):
                                        " - " + epic_shortname,
                                  currencyCode=globalvar.currencyCode,
                                  size=WIN_SIZE)
-        # window = gui.Window(None, pivots=[0,0,0,0,0,0,0], title='Trading IG')
-
         window.buy_button.Bind(wx.EVT_BUTTON, buy)
         window.sell_button.Bind(wx.EVT_BUTTON, sell)
         window.lot_size.Bind(wx.EVT_TEXT, window.update_sizelot)
         window.SL_point.Bind(wx.EVT_TEXT, window.update_SLpoint)
         window.TP_point.Bind(wx.EVT_TEXT, window.update_TPpoint)
-        window.SL_currency.Bind(wx.EVT_TEXT, window.update_SLcurrency)
-        window.SL_percentage.Bind(wx.EVT_TEXT, window.update_SL_percentage)
+        window.SL_currency.Bind(wx.EVT_TEXT, window.update_SL_ccy_percentage)
+        window.SL_percentage.Bind(wx.EVT_TEXT, window.update_SL_ccy_percentage)
         window.is_Force_Open_box.Bind(wx.EVT_CHECKBOX, window.update_forceOpen)
 
         window.is_Keyboard_Trading_box.Bind(wx.EVT_CHECKBOX,
@@ -519,7 +528,7 @@ def main(event):
         (pnlEuro, pnlPoints, pnlPointsPerLot, nbTrades) = events.getDailyPnl()
         window.update_pnlDaily(pnlEuro, pnlPoints, pnlPointsPerLot, nbTrades)
         
-        # Polling toutes les X secondes des caracteristique du contrat.
+        # Polling toutes les X secondes des caracteristiques du contrat.
         pollingThread = threading.Thread(target=pollingMarketsDetails,
                                          args=(60,))
         pollingThread.start()

@@ -238,4 +238,3 @@ if __name__ == '__main__':
     app = wx.App()
     LogWindow(None, title="L3 Scalping GUI_LOGIN ONLY")
     app.MainLoop()
-
