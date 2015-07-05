@@ -17,7 +17,7 @@ def call_later(func):
     return func_wrapper
 
 
-def format(p) :  
+def price_format(p):
     p = float(p)
     return "%d %3.2f" % (p / 1000, p - int(p / 1000) * 1000)
 
@@ -162,8 +162,8 @@ class Window(wx.Frame):
 
     @call_later
     def update_price(self, bid, ask):
-        self.buy_button.SetLabel('Buy @ ' + format(bid))
-        self.sell_button.SetLabel('Sell @ ' + format(ask))
+        self.buy_button.SetLabel('Buy @ ' + price_format(bid))
+        self.sell_button.SetLabel('Sell @ ' + price_format(ask))
         self.statusbar.SetStatusText("last updated: " +
                                      time.strftime("%H:%M:%S"))
 
@@ -197,7 +197,7 @@ class Window(wx.Frame):
     def set_pivots(self, pivots):
         labels = "R3 R2 R1 P S1 S2 S3".split()
         for i, p in enumerate(pivots[::-1]):
-           p = format(p)
+           p = price_format(p)
            self.pivots[i].SetLabel(labels[i] + ": " + p)
            color = (255, 0, 0) if i > 3 else (0, 255, 0) if i < 3 else (0, 0, 0)
            self.pivots[i].SetForegroundColour(color)
