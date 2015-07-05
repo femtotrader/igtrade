@@ -269,7 +269,7 @@ def SLto0(event):
         if deal.get('epic') == personal.epic:
             o = float(deal.get('open_level'))
             tp = deal.get('limit_level')
-            events.updateLimit(deal_id, o, tp)
+            events.update_limit(deal_id, o, tp)
 
 
 def SLto0spread(event):
@@ -280,7 +280,7 @@ def SLto0spread(event):
             o = float(deal.get('open_level'))
             o = o - (globalvar.spread/globalvar.scalingFactor)
             tp = deal.get('limit_level')
-            events.updateLimit(deal_id, o, tp)
+            events.update_limit(deal_id, o, tp)
 
 
 def TPto0(event):
@@ -290,25 +290,25 @@ def TPto0(event):
         if globalvar.dict_openposition.get(dealId).get('epic') == personal.epic:
             o = float(globalvar.dict_openposition.get(dealId).get('open_level'))
             sl = globalvar.dict_openposition.get(dealId).get('stop_level')
-            events.updateLimit(dealId, sl, o)
+            events.update_limit(dealId, sl, o)
 
 def SLtoPRU(event):
     # print("SL to PRU ", personal.epic)
-    pru = events.PRU(personal.epic)
+    pru = events.compute_pru(personal.epic)
     # print("PRU = %s" % pru)
     for dealId in globalvar.dict_openposition:
         if globalvar.dict_openposition.get(dealId).get('epic') == personal.epic:
             tp = globalvar.dict_openposition.get(dealId).get('limit_level')
-            events.updateLimit(dealId, pru, tp)
+            events.update_limit(dealId, pru, tp)
 
 def SLtoPRU(event):
     # print("SL to PRU ", personal.epic)
-    pru = events.PRU(personal.epic)
+    pru = events.compute_pru(personal.epic)
     # print("PRU = %s" % pru)
     for dealId in globalvar.dict_openposition:
         if globalvar.dict_openposition.get(dealId).get('epic') == personal.epic:
             tp = globalvar.dict_openposition.get(dealId).get('limit_level')
-            events.updateLimit(dealId, pru, tp)
+            events.update_limit(dealId, pru, tp)
 
 def main(event):
     loging_window.on_close()
@@ -434,7 +434,7 @@ def main(event):
                                 schema="OFFER BID",
                                 )
         
-        priceTable.on_update.listen(events.processPriceUpdate)
+        priceTable.on_update.listen(events.process_price_update)
 
         # Ajout DEPOSIT pour test
         balanceTable = igls.Table(client,
@@ -443,7 +443,7 @@ def main(event):
                                   schema='AVAILABLE_CASH PNL DEPOSIT',
                                   )
 
-        balanceTable.on_update.listen(events.processBalanceUpdate)
+        balanceTable.on_update.listen(events.process_balance_update)
 
         # Modif falex
         # Je garde uniquement OPU pour avoir
@@ -454,7 +454,7 @@ def main(event):
                                    schema='OPU',
                                    )
 
-        positionTable.on_update.listen(events.processPositionUpdate)
+        positionTable.on_update.listen(events.process_position_update)
 
         # Ajout falex
         # Je ne garde que CONFIRMS
@@ -464,7 +464,7 @@ def main(event):
                                 schema='CONFIRMS',
                                 )
 
-        tradeTable.on_update.listen(events.processTradeUpdate)
+        tradeTable.on_update.listen(events.process_trade_update)
 
         pivots = calculatePivots()  # Calcul les PP en Daily/formule classique
 
@@ -521,11 +521,11 @@ def main(event):
         events.window = window
 
         # Charge la liste des positions en stock à l'ouverture du programme
-        events.get_openPositions()
+        events.get_open_positions()
 
         # Ajout Guilux pour afficher le PNL Journalier
         # Calcul du PNL journalier
-        (pnlEuro, pnlPoints, pnlPointsPerLot, nbTrades) = events.getDailyPnl()
+        (pnlEuro, pnlPoints, pnlPointsPerLot, nbTrades) = events.get_daily_pnl()
         window.update_pnlDaily(pnlEuro, pnlPoints, pnlPointsPerLot, nbTrades)
         
         # Polling toutes les X secondes des caracteristiques du contrat.
