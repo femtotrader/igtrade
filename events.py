@@ -154,7 +154,7 @@ def process_position_update(item, my_update_field):
                     opu.get(u'reason'), opu.get(u'epic'), opu.get(u'expiry'),
                     opu.get(u'affectedDeals'), opu.get(u'dealReference')]
         # Envoi des evenements OPU dans la sous fenêtre OPU
-        window.add_OPUmessage(opu_ordo)
+        window.add_opu_message(opu_ordo)
 
         # Trois messages 'status' à gérer :
         # 'OPEN' = Ouverture d'un nouveau ticket :
@@ -185,7 +185,7 @@ def process_position_update(item, my_update_field):
             # Enregistrement de la position dans le dico
             globalvar.dict_openposition.update({deal_id: open_values})
             # Envoi le dictionnaire à afficher
-            window.set_openpositions(globalvar.dict_openposition)
+            window.set_open_positions(globalvar.dict_openposition)
             pru = compute_pru(personal.epic)
             window.update_pru(pru)
             update_count_ticket()
@@ -198,7 +198,7 @@ def process_position_update(item, my_update_field):
                 pass
             # print(globalvar.dict_openposition)
             # Envoi le dictionnaire à afficher
-            window.set_openpositions(globalvar.dict_openposition)
+            window.set_open_positions(globalvar.dict_openposition)
             pru = compute_pru(personal.epic)
             window.update_pru(pru)
             update_count_ticket()
@@ -206,7 +206,7 @@ def process_position_update(item, my_update_field):
             # Guilux modif pouir afficher le PNL Journalier
             # Calcul du PNL journalier
             pnl_euro, pnl_points, pnl_points_per_lot, nb_trades = get_daily_pnl()
-            window.update_pnlDaily(pnl_euro, pnl_points,
+            window.update_pnl_daily(pnl_euro, pnl_points,
                                    pnl_points_per_lot, nb_trades)
 
         elif opu.get('status') == u'UPDATED':
@@ -228,7 +228,7 @@ def process_position_update(item, my_update_field):
             globalvar.dict_openposition[deal_id] = udpate_values
             # print(globalvar.dict_openposition)
             # Envoi le dictionnaire à afficher
-            window.set_openpositions(globalvar.dict_openposition)
+            window.set_open_positions(globalvar.dict_openposition)
             pru = compute_pru(personal.epic)
             window.update_pru(pru)
             update_count_ticket()
@@ -237,7 +237,7 @@ def process_position_update(item, my_update_field):
             # Calcul du PNL journalier
             (pnl_euro, pnl_points, pnl_points_per_lot, nb_trades) \
                 = get_daily_pnl()
-            window.update_pnlDaily(pnl_euro, pnl_points,
+            window.update_pnl_daily(pnl_euro, pnl_points,
                                    pnl_points_per_lot, nb_trades)
 
         else:
@@ -351,7 +351,7 @@ def process_trade_update(item, my_update_field):
             # pour l'nevoyer à l'affichage dans le fenêrte d'évenemnt
             opu_ordo = [deal_status, reason]
             # Envoi des evenements OPU dans la sous fenêtre OPU
-            window.add_OPUmessage(opu_ordo)
+            window.add_opu_message(opu_ordo)
         # print("Post DELETE Status code -> ", r.status_code)
     # print("----Fin----")
 
@@ -412,7 +412,7 @@ def get_open_positions():
         globalvar.dict_openposition.update({deal_id: new_deal})
     window.update_pos(nb_ticket, size_to_buy, size_to_sell)
     # print("Envoi de =>>>>>>>>>> ", globalvar.dict_openposition)
-    window.set_openpositions(globalvar.dict_openposition)  # Ok
+    window.set_open_positions(globalvar.dict_openposition)  # Ok
     pru = compute_pru(personal.epic)
     window.update_pru(pru)
     # print ("---Fin---")

@@ -516,28 +516,28 @@ def main(event):
                                  size=WIN_SIZE)
         window.buy_button.Bind(wx.EVT_BUTTON, buy)
         window.sell_button.Bind(wx.EVT_BUTTON, sell)
-        window.lot_size.Bind(wx.EVT_TEXT, window.update_sizelot)
-        window.SL_point.Bind(wx.EVT_TEXT, window.update_SLpoint)
-        window.TP_point.Bind(wx.EVT_TEXT, window.update_TPpoint)
-        window.SL_currency.Bind(wx.EVT_TEXT, window.update_SL_ccy_percentage)
-        window.SL_percentage.Bind(wx.EVT_TEXT, window.update_SL_ccy_percentage)
-        window.is_Force_Open_box.Bind(wx.EVT_CHECKBOX, window.update_forceOpen)
+        window.lot_size.Bind(wx.EVT_TEXT, window.update_size_lot)
+        window.sl_point.Bind(wx.EVT_TEXT, window.update_sl_point)
+        window.tp_point.Bind(wx.EVT_TEXT, window.update_tp_point)
+        window.sl_currency.Bind(wx.EVT_TEXT, window.update_SL_ccy_percentage)
+        window.sl_percentage.Bind(wx.EVT_TEXT, window.update_SL_ccy_percentage)
+        window.is_force_open_box.Bind(wx.EVT_CHECKBOX, window.update_force_open)
 
-        window.is_Keyboard_Trading_box.Bind(wx.EVT_CHECKBOX,
-                                            window.update_keyboardtrading)
-        window.is_AutoStop_to_OpenLevel_box.Bind(wx.EVT_CHECKBOX,
-                                                 window.update_AutoStop_to_OpenLevel)
-        window.openpositions_list.Bind(wx.EVT_LIST_ITEM_SELECTED,
+        window.is_keyboard_trading_box.Bind(wx.EVT_CHECKBOX,
+                                            window.update_keyboard_trading)
+        window.is_auto_stop_to_open_level_box.Bind(wx.EVT_CHECKBOX,
+                                                 window.update_auto_stop_to_open_level)
+        window.open_positions_list.Bind(wx.EVT_LIST_ITEM_SELECTED,
                                        window.OnClick_openpositionslist)
         # Intercepte l'équivalent du key-down.
         window.panel.Bind(wx.EVT_CHAR_HOOK, on_key_press)
-        window.closeAll_button.Bind(wx.EVT_BUTTON, close_all_button)
-        window.is_GuaranteedStop_Trading_box.Bind(wx.EVT_CHECKBOX,
-                                                  window.update_guaranteedStopTrading)
-        window.SLto0_button.Bind(wx.EVT_BUTTON, sl_to_zero)
-        window.TPto0_button.Bind(wx.EVT_BUTTON, tp_to_zero)
-        window.SLtoPRU_button.Bind(wx.EVT_BUTTON, sl_to_pru)
-        window.closeAllepic_button.Bind(wx.EVT_BUTTON, close_all_epic_button)
+        window.close_all_button.Bind(wx.EVT_BUTTON, close_all_button)
+        window.is_guaranteed_stop_trading_box.Bind(wx.EVT_CHECKBOX,
+                                                  window.update_guaranteed_stop_trading)
+        window.sl_to_zero_button.Bind(wx.EVT_BUTTON, sl_to_zero)
+        window.tp_to_zero_button.Bind(wx.EVT_BUTTON, tp_to_zero)
+        window.sl_to_pru_button.Bind(wx.EVT_BUTTON, sl_to_pru)
+        window.close_all_epic_button.Bind(wx.EVT_BUTTON, close_all_epic_button)
         # Transmet la variable windows au module events sans passer par
         # la directive globale
         events.window = window
@@ -549,7 +549,7 @@ def main(event):
         # Calcul du PNL journalier
         (pnl_euro, pnl_points, pnl_points_per_lot, nb_trades) = \
             events.get_daily_pnl()
-        window.update_pnlDaily(pnl_euro, pnl_points, pnl_points_per_lot,
+        window.update_pnl_daily(pnl_euro, pnl_points, pnl_points_per_lot,
                                nb_trades)
         
         # Polling toutes les X secondes des caracteristiques du contrat.
