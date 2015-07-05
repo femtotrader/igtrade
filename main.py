@@ -559,5 +559,5 @@ if __name__ == '__main__':
     app = wx.App()
     loging_window = gui_login.LogWindow(None, 'L3 scalping V%s - Login' %
                                         globalvar.version)
-    loging_window.btnConn.Bind(wx.EVT_BUTTON, main)
+    loging_window.btn_conn.Bind(wx.EVT_BUTTON, main)
     app.MainLoop()

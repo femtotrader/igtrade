@@ -2,8 +2,10 @@
 Book order simulator
 """
 
-import wx
 import time
+
+import wx
+
 import personal
 
 
@@ -73,10 +75,10 @@ class LogWindow(wx.Frame):
                        (proxy_text, self.proxy),
                        (self.connect_button, self.exit_button)]:
 
-           box = wx.BoxSizer(wx.HORIZONTAL)
-           box.Add(t, proportion=1, flag=wx.ALIGN_CENTER)
-           box.Add(b, proportion=3, flag=wx.ALIGN_CENTER)
-           panel_box.Add(box, 5, wx.ALIGN_CENTER)
+            box = wx.BoxSizer(wx.HORIZONTAL)
+            box.Add(t, proportion=1, flag=wx.ALIGN_CENTER)
+            box.Add(b, proportion=3, flag=wx.ALIGN_CENTER)
+            panel_box.Add(box, 5, wx.ALIGN_CENTER)
 
         panel_box.SetSizeHints(panel)
         panel.SetSizer(panel_box)
@@ -169,23 +171,23 @@ class Window(wx.Frame):
 
     @call_later
     def update_balance(self, balance='NA', pnl='NA', nb_pos='NA'):
-        self.nb_pos.SetLabel( " Total pos: %s" % nb_pos)
-        self.balance.SetLabel( "balance: %s, PNL: %s" % (balance, pnl))
+        self.nb_pos.SetLabel(" Total pos: %s" % nb_pos)
+        self.balance.SetLabel("balance: %s, PNL: %s" % (balance, pnl))
 
     @call_later
     def add_position(self, pos):
         index = self.position_list.InsertStringItem(0, '')
         try:
-            affectedDeals =pos[5]
-            dealId = affectedDeals[0]['dealId']
-            if dealId in self.history:
-                pnl = pos[4] - self.history[dealId]
+            affected_deals = pos[5]
+            deal_id = affected_deals[0]['dealId']
+            if deal_id in self.history:
+                pnl = pos[4] - self.history[deal_id]
                 if pos[2] == 'BUY':
                     pnl = -pnl
                 self.total_pnl += pnl
                 self.pnl.SetLabel("Daily pnl: %.2f" % self.total_pnl)
             else:
-                self.history[dealId] = pos[4]
+                self.history[deal_id] = pos[4]
         except:
             # TODO: why write this? remove or specify what exeption to ignore
             pass
@@ -197,12 +199,15 @@ class Window(wx.Frame):
     def set_pivots(self, pivots):
         labels = "R3 R2 R1 P S1 S2 S3".split()
         for i, p in enumerate(pivots[::-1]):
-           p = price_format(p)
-           self.pivots[i].SetLabel(labels[i] + ": " + p)
-           color = (255, 0, 0) if i > 3 else (0, 255, 0) if i < 3 else (0, 0, 0)
-           self.pivots[i].SetForegroundColour(color)
+            p = price_format(p)
+            self.pivots[i].SetLabel(labels[i] + ": " + p)
+            red = (255, 0, 0)
+            green = (0, 255, 0)
+            black = (0, 0, 0)
+            color = red if i > 3 else green if i < 3 else black
+            self.pivots[i].SetForegroundColour(color)
 
 if __name__ == "__main__":
-   app = wx.App()
-   window = LogWindow(None)
-   app.MainLoop()
+    app = wx.App()
+    window = LogWindow(None)
+    app.MainLoop()
