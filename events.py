@@ -552,7 +552,7 @@ def get_daily_pnl():
             
             # on arrondi pour ne pas avoir 0,2999999 point
             diff_level = round(distance_to_close * size, 1)
-            diff_level_per_lot = round(distance_to_close * size / size, 1)
+            diff_level_per_lot = round(distance_to_close * size / abs(size), 1)
             
             # print("closeLevel,openLevel,size,diff_level,"
             #       "diff_level_per_lot,distance_to_close",
