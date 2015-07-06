@@ -1,15 +1,11 @@
 # -*- coding:utf-8 -*-
 
-# Version 1.17 splanquart/yopi/falex du 2015 06 29
-# Sur base 1.16
+# Version 1.17.1 splanquart/falex du 2015 06 29
+# Sur base 1.17
 
 # Ajouts fonctionnels / modifications / corrections :
-# - Mise au norme PEP08 du code par Splanquart
-# - Intégration du code de Yopi : Ajout d'un SL en % du capital
-# - Ajout d'un calcul du nombre de point pour un lot (en plus du point X lots)
-# - Renommage de tête de colonne dans la liste des positions ouvertes
-# - Ajout d'une fonction de mise à Slà0 automatique
-# - Ajout des epic demandés dans le forum (au 29/06/2015)
+# - Correction du GetDAilyPnL
+# - Snake_type des variables
 
 # L3 Scalping
 # Import Librairies système

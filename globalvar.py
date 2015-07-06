@@ -3,7 +3,7 @@
 # Fichier de definition/stockage des variables globales du programme.
 import collections
 
-version = "1.17"
+version = "1.17.1"
 
 # Variables Instrument
 # Affectation de la valeur à la connexion
