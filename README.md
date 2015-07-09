@@ -54,7 +54,7 @@ you can get one from http://labs.ig.com/sample-apps/api-companion/
 Enjoy
 
 Installation under MacOSX
--------
+-------------------------
 
 Downloads & install Python 2.7.9 from https://www.python.org/downloads/
 ```bash
@@ -74,7 +74,7 @@ Enter your user, password and API Key. If you don't have an API Key yet, you can
 Enjoy
 
 Installation under Windows
--------
+--------------------------
 
 Downloads & install Python 2.7.9 from https://www.python.org/downloads/
 Downloads & install wxPython from http://wiki.wxpython.org/How%20to%20install%20wxPython
@@ -91,3 +91,8 @@ Enter your user, password and API Key. If you don't have an API Key yet, you can
 ![alt tag](https://raw.githubusercontent.com/maroxe/igtrade/master/login.png)
 
 Enjoy
+
+Contribution
+------------
+
+If you want to contribute you must read CONTRIBUTE.md.
