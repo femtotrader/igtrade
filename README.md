@@ -95,4 +95,4 @@ Enjoy
 Contribution
 ------------
 
-If you want to contribute you must read [CONTRIBUTE.md!](CONTRIBUTE.md).
+If you want to contribute you must read [CONTRIBUTE.md](CONTRIBUTE.md).
