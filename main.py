@@ -328,8 +328,62 @@ def SLtoPRU(event):
             events.update_limit(deal_id, pru, tp)
 
 
+def create_window(win_size, account_id=None, account_name=None,
+                  epic_shortname='None'):
+    """
+
+    :param win_size:
+    :param account_id:
+    :param account_name:
+    :param epic_shortname:
+    :return:
+    """
+    account_id = account_id if account_id else ''
+    account_name = account_name if account_name else ''
+    epic_shortname = epic_shortname if epic_shortname else ''
+    window = gui_main.Window(None,
+                             title='L3 scalping - ' + globalvar.version,
+                             currencyCode=globalvar.currency_code,
+                             size=win_size)
+    window.buy_button.Bind(wx.EVT_BUTTON, buy)
+    window.sell_button.Bind(wx.EVT_BUTTON, sell)
+    window.lot_size.Bind(wx.EVT_TEXT, window.update_size_lot)
+    window.sl_point.Bind(wx.EVT_TEXT, window.update_sl_point)
+    window.tp_point.Bind(wx.EVT_TEXT, window.update_tp_point)
+    window.sl_currency.Bind(wx.EVT_TEXT, window.update_SL_ccy_percentage)
+    window.sl_percentage.Bind(wx.EVT_TEXT, window.update_SL_ccy_percentage)
+    window.is_force_open_box.Bind(wx.EVT_CHECKBOX, window.update_force_open)
+
+    window.is_keyboard_trading_box.Bind(wx.EVT_CHECKBOX,
+                                        window.update_keyboard_trading)
+    window.is_auto_stop_to_open_level_box.\
+        Bind(wx.EVT_CHECKBOX, window.update_auto_stop_to_open_level)
+    window.open_positions_list.Bind(wx.EVT_LIST_ITEM_SELECTED,
+                                    window.OnClick_openpositionslist)
+    # Intercepte l'équivalent du key-down.
+    window.panel.Bind(wx.EVT_CHAR_HOOK, on_key_press)
+    window.close_all_button.Bind(wx.EVT_BUTTON, close_all_button)
+    window.is_guaranteed_stop_trading_box.\
+        Bind(wx.EVT_CHECKBOX, window.update_guaranteed_stop_trading)
+    window.sl_to_zero_button.Bind(wx.EVT_BUTTON, sl_to_zero)
+    window.tp_to_zero_button.Bind(wx.EVT_BUTTON, tp_to_zero)
+    window.sl_to_pru_button.Bind(wx.EVT_BUTTON, sl_to_pru)
+    window.close_all_epic_button.Bind(wx.EVT_BUTTON, close_all_epic_button)
+    # Transmet la variable windows au module events sans passer par
+    # la directive globale
+    events.window = window
+    return window
+
+
 def main(event):
     logging_window.on_close()
+
+    # create window in first time because events ask to have window created
+    width = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X)
+    height = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y)
+    win_size = (width/2.6, height/1.3)
+
+    window = create_window(win_size=win_size)
 
     # Connecting to IG
     urls.set_urls()
@@ -447,19 +501,19 @@ def main(event):
 
         # Binding sur les differents flux de stream et fonctions associés
         price_table = igls.Table(client,
-                                mode=igls.MODE_MERGE,
-                                item_ids='MARKET:%s' % personal.epic,
-                                schema="OFFER BID",
-                                )
+                                 mode=igls.MODE_MERGE,
+                                 item_ids='MARKET:%s' % personal.epic,
+                                 schema="OFFER BID",
+                                 )
         
         price_table.on_update.listen(events.process_price_update)
 
         # Ajout DEPOSIT pour test
         balance_table = igls.Table(client,
-                                  mode=igls.MODE_MERGE,
-                                  item_ids='ACCOUNT:' + account_id,
-                                  schema='AVAILABLE_CASH PNL DEPOSIT',
-                                  )
+                                   mode=igls.MODE_MERGE,
+                                   item_ids='ACCOUNT:' + account_id,
+                                   schema='AVAILABLE_CASH PNL DEPOSIT',
+                                   )
 
         balance_table.on_update.listen(events.process_balance_update)
 
@@ -467,24 +521,22 @@ def main(event):
         # Je garde uniquement OPU pour avoir
         # les updates de status des positions en cours
         position_table = igls.Table(client,
-                                   mode=igls.MODE_DISTINCT,
-                                   item_ids='TRADE:' + account_id,
-                                   schema='OPU',
-                                   )
+                                    mode=igls.MODE_DISTINCT,
+                                    item_ids='TRADE:' + account_id,
+                                    schema='OPU',
+                                    )
 
         position_table.on_update.listen(events.process_position_update)
 
         # Ajout falex
         # Je ne garde que CONFIRMS
         trade_table = igls.Table(client,
-                                mode=igls.MODE_DISTINCT,
-                                item_ids='TRADE:' + account_id,
-                                schema='CONFIRMS',
-                                )
+                                 mode=igls.MODE_DISTINCT,
+                                 item_ids='TRADE:' + account_id,
+                                 schema='CONFIRMS',
+                                 )
 
         trade_table.on_update.listen(events.process_trade_update)
-
-        pivots = calculate_pivots()  # Calcul les PP en Daily/formule classique
 
         # Récupére la taille min d'ouverture d'un ticket et la monnaie d'échange
         (globalvar.min_deal_size, globalvar.currency_code,
@@ -499,45 +551,12 @@ def main(event):
         #       globalvar.min_normal_stop_or_limit_distance,
         #       globalvar.min_controlled_risk_stop_distance)
         # globalvar.currency_code = EUR, AUD, USD, GBP, ...
-        width = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X)
-        height = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y)
-        WIN_SIZE = (width/2.6, height/1.3)
 
-        epic_shortname = globalvar.epic_to_shortname_dict.get(personal.epic)
-        window = gui_main.Window(None, pivots=pivots,
-                                 title='L3 scalping - ' + globalvar.version +
-                                       ' - ' + account_id + " - " + account_name +
-                                       " - " + epic_shortname,
-                                 currencyCode=globalvar.currency_code,
-                                 size=WIN_SIZE)
-        window.buy_button.Bind(wx.EVT_BUTTON, buy)
-        window.sell_button.Bind(wx.EVT_BUTTON, sell)
-        window.lot_size.Bind(wx.EVT_TEXT, window.update_size_lot)
-        window.sl_point.Bind(wx.EVT_TEXT, window.update_sl_point)
-        window.tp_point.Bind(wx.EVT_TEXT, window.update_tp_point)
-        window.sl_currency.Bind(wx.EVT_TEXT, window.update_SL_ccy_percentage)
-        window.sl_percentage.Bind(wx.EVT_TEXT, window.update_SL_ccy_percentage)
-        window.is_force_open_box.Bind(wx.EVT_CHECKBOX, window.update_force_open)
+        epic_short_name = globalvar.epic_to_shortname_dict.get(personal.epic)
 
-        window.is_keyboard_trading_box.Bind(wx.EVT_CHECKBOX,
-                                            window.update_keyboard_trading)
-        window.is_auto_stop_to_open_level_box.Bind(wx.EVT_CHECKBOX,
-                                                 window.update_auto_stop_to_open_level)
-        window.open_positions_list.Bind(wx.EVT_LIST_ITEM_SELECTED,
-                                       window.OnClick_openpositionslist)
-        # Intercepte l'équivalent du key-down.
-        window.panel.Bind(wx.EVT_CHAR_HOOK, on_key_press)
-        window.close_all_button.Bind(wx.EVT_BUTTON, close_all_button)
-        window.is_guaranteed_stop_trading_box.Bind(wx.EVT_CHECKBOX,
-                                                  window.update_guaranteed_stop_trading)
-        window.sl_to_zero_button.Bind(wx.EVT_BUTTON, sl_to_zero)
-        window.tp_to_zero_button.Bind(wx.EVT_BUTTON, tp_to_zero)
-        window.sl_to_pru_button.Bind(wx.EVT_BUTTON, sl_to_pru)
-        window.close_all_epic_button.Bind(wx.EVT_BUTTON, close_all_epic_button)
-        # Transmet la variable windows au module events sans passer par
-        # la directive globale
-        events.window = window
-
+        window.set_title(app_name='L3 Scalping', version=globalvar.version,
+                         account_id=account_id, account_name=account_name,
+                         epic_short_name=epic_short_name)
         # Charge la liste des positions en stock à l'ouverture du programme
         events.get_open_positions()
 
@@ -546,13 +565,13 @@ def main(event):
         (pnl_euro, pnl_points, pnl_points_per_lot, nb_trades) = \
             events.get_daily_pnl()
         window.update_pnl_daily(pnl_euro, pnl_points, pnl_points_per_lot,
-                               nb_trades)
+                                nb_trades)
         
         # Polling toutes les X secondes des caracteristiques du contrat.
         polling_thread = threading.Thread(target=polling_markets_details,
                                           args=(60,))
         polling_thread.start()
-        
+
 
 if __name__ == '__main__':
     # logueur console

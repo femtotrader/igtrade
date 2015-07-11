@@ -43,7 +43,7 @@ def price_format(price):
 
 
 class Window(wx.Frame):
-    def __init__(self, parent, title, pivots, currencyCode, size):
+    def __init__(self, parent, title, currencyCode, size):
         super(Window, self).__init__(parent, title=title, size=size)
 
         # self.icon = wx.Icon('l3.ico', wx.BITMAP_TYPE_ICO)
@@ -54,6 +54,32 @@ class Window(wx.Frame):
         # Pivots
         # self.set_pivots(pivots)
         self.Show()
+
+    def set_title(self, title=None, app_name=None, version=None,
+                  account_id=None, account_name=None, epic_short_name=None):
+        """Define title of the window
+        This method was re-define because wxPython don't respect PEP8
+
+        Example 1:
+        window.set_title(title='Hello')
+
+        Example 2:
+        windows.set_title(app_name='L3 Scalping', version='1.17.1',
+                          account_id='DEZ33', account_name='default',
+                          epic_short_name='DAX')
+
+        :param title:
+        :param app_name:
+        :param version:
+        :param account_id:
+        :param account_name:
+        :param epic_short_name:
+        :return:
+        """
+        new_title = title if title else '%s - %s - %s - %s - %s' % \
+                                        (app_name, version, account_id,
+                                         account_name, epic_short_name)
+        self.SetTitle(new_title)
 
     def init_ui(self, currencyCode):
         self.statusbar = self.CreateStatusBar()
