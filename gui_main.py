@@ -2,6 +2,7 @@
 import time
 
 import wx
+import wx.lib.buttons as buttons
 
 import personal
 import events  # Import de events pour pouvoir appeler la fonction delete
@@ -14,7 +15,8 @@ COLORS = {
     'red_loss': (218, 45, 40),
     'blue_win': (0, 150, 214),
     'green_zero': (0, 150, 14),
-    'black': (0, 0, 0)
+    'black': (0, 0, 0),
+    'white': (255, 255,  255)
 }
 
 
@@ -92,18 +94,23 @@ class Window(wx.Frame):
 
         # Definition des widgets
         button_size = wx.Size(40, 40)
-        text_size = wx.Size(50,25)
-        self.buy_button = wx.Button(self.panel, -1, size=button_size)
+        text_size = wx.Size(50, 25)
+        self.buy_button = buttons.GenButton(parent=self.panel,
+                                            id=-1,
+                                            size=button_size)
         # Fond Bleu ticket IG
-        self.buy_button.SetBackgroundColour((0, 150, 214))
+        self.buy_button.SetBackgroundColour(COLORS['blue_win'])
         # Texte en blanc
-        self.buy_button.SetForegroundColour((255, 255, 255))
+        self.buy_button.SetForegroundColour(COLORS['white'])
         self.buy_button.SetLabel('for LS')
-        self.sell_button = wx.Button(self.panel, -1, size=button_size)
+
         # Fond en Rouge ticket IG
-        self.sell_button.SetBackgroundColour((218, 45, 40))
+        self.sell_button = buttons.GenButton(parent=self.panel,
+                                             id=-1,
+                                             size=button_size)
+        self.sell_button.SetBackgroundColour(COLORS['red_loss'])
         # Texte en blanc
-        self.sell_button.SetForegroundColour((255, 255, 255))
+        self.sell_button.SetForegroundColour(COLORS['white'])
         self.sell_button.SetLabel('Waiting')
         self.spread_text = wx.StaticText(self.panel, -1,
                                          label="Spread : 01.0"
@@ -134,7 +141,7 @@ class Window(wx.Frame):
                           label="Auto SL to Open Level",
                           style=wx.TE_LEFT)
         self.is_auto_stop_to_open_level_box = wx.CheckBox(self.panel, -1,
-                                                        style=wx.TE_RIGHT)
+                                                          style=wx.TE_RIGHT)
         self.is_auto_stop_to_open_level_box.SetValue(
             globalvar.is_auto_stop_to_open_level)
         self.lot_size_text = wx.StaticText(self.panel, -1, label="Size",
@@ -182,8 +189,8 @@ class Window(wx.Frame):
         self.close_all_epic_button = wx.Button(self.panel, -1, size=button_size)
         self.close_all_epic_button.SetBackgroundColour((211, 213, 206))
         self.close_all_epic_button.SetLabel('CloseAll %s' %
-                                          (globalvar.epic_to_shortname_dict.
-                                           get(personal.epic)))
+                                            (globalvar.epic_to_shortname_dict.
+                                             get(personal.epic)))
         self.sl_to_zero_button = wx.Button(self.panel, -1, size=button_size)
         self.sl_to_zero_button.SetBackgroundColour((211, 213, 206))
         self.sl_to_zero_button.SetLabel('SL to 0')
